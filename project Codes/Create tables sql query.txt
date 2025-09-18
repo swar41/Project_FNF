@@ -1,0 +1,143 @@
+-- ========================================
+-- 1. Users
+-- ========================================
+CREATE TABLE Users (
+    UserId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    FullName NVARCHAR(200) NOT NULL,
+    Email NVARCHAR(200) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(500) NOT NULL,
+    Role NVARCHAR(20) NOT NULL CHECK (Role IN ('Employee','Manager')),
+    ProfilePicture NVARCHAR(500) NULL,
+    DepartmentId not NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (DepartmentId) REFERENCES Departments(DeptId)
+);
+
+-- ========================================
+-- 2. Departments
+-- ========================================
+CREATE TABLE Departments (
+    DeptId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    DeptName NVARCHAR(200) NOT NULL UNIQUE
+);
+
+-- ========================================
+-- 3. Tags
+-- ========================================
+CREATE TABLE Tags (
+    TagId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    TagName NVARCHAR(200) NOT NULL UNIQUE,
+    DeptId INT NOT NULL,
+    FOREIGN KEY (DeptId) REFERENCES Departments(DeptId)
+);
+
+-- ========================================
+-- 4. Posts
+-- ========================================
+CREATE TABLE Posts (
+    PostId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    UserId INT NOT NULL,
+    DeptId INT NOT NULL,
+    Title NVARCHAR(500) NOT NULL,
+    Body NVARCHAR(MAX) NOT NULL,
+    UpvoteCount INT NOT NULL DEFAULT 0,
+    DownvoteCount INT NOT NULL DEFAULT 0,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedAt DATETIME NULL,
+    IsRepost BIT NOT NULL DEFAULT 0,
+    FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    FOREIGN KEY (DeptId) REFERENCES Departments(DeptId)
+);
+
+-- ========================================
+-- 5. PostTags
+-- ========================================
+CREATE TABLE PostTags (
+    PostTagId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    PostId INT NOT NULL,
+    TagId INT NOT NULL,
+    FOREIGN KEY (PostId) REFERENCES Posts(PostId),
+    FOREIGN KEY (TagId) REFERENCES Tags(TagId)
+);
+
+-- ========================================
+-- 6. Comments
+-- ========================================
+CREATE TABLE Comments (
+    CommentId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    PostId INT NOT NULL,
+    UserId INT NOT NULL,
+    ParentCommentId INT NULL,
+    CommentText NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedAt DATETIME NULL,
+    FOREIGN KEY (PostId) REFERENCES Posts(PostId),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    FOREIGN KEY (ParentCommentId) REFERENCES Comments(CommentId)
+);
+
+-- ========================================
+-- 7. Votes
+-- ========================================
+CREATE TABLE Votes (
+    VoteId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    PostId INT NULL,
+    CommentId INT NULL,
+    UserId INT NOT NULL,
+    VoteType NVARCHAR(20) NOT NULL CHECK (VoteType IN ('Upvote','Downvote')),
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (PostId) REFERENCES Posts(PostId),
+    FOREIGN KEY (CommentId) REFERENCES Comments(CommentId),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
+-- ========================================
+-- 8. Managers
+-- ========================================
+CREATE TABLE Managers (
+    ManagerId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    UserId INT NOT NULL UNIQUE,
+    DeptId INT NOT NULL,
+    FOREIGN KEY (UserId) REFERENCES Users(UserId),
+    FOREIGN KEY (DeptId) REFERENCES Departments(DeptId)
+);
+
+-- ========================================
+-- 9. Attachments
+-- ========================================
+CREATE TABLE Attachments (
+    AttachmentId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    PostId INT NULL,
+    CommentId INT NULL,
+    FileName NVARCHAR(200) NOT NULL,
+    FilePath NVARCHAR(500) NOT NULL,
+    FileType NVARCHAR(20) NOT NULL CHECK (FileType IN ('Image','Code')),
+    UploadedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (PostId) REFERENCES Posts(PostId),
+    FOREIGN KEY (CommentId) REFERENCES Comments(CommentId)
+);
+
+-- ========================================
+-- 10. Reposts
+-- ========================================
+CREATE TABLE Reposts (
+    RepostId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    PostId INT NOT NULL,
+    UserId INT NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (PostId) REFERENCES Posts(PostId),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
+-- ========================================
+-- 11. Commits (Manager Modifications)
+-- ========================================
+CREATE TABLE Commits (
+    CommitId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    PostId INT NOT NULL,
+    ManagerId INT NOT NULL,
+    Message NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (PostId) REFERENCES Posts(PostId),
+    FOREIGN KEY (ManagerId) REFERENCES Managers(ManagerId)
+);
