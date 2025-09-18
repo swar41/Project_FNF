@@ -8,7 +8,7 @@ CREATE TABLE Users (
     PasswordHash NVARCHAR(500) NOT NULL,
     Role NVARCHAR(20) NOT NULL CHECK (Role IN ('Employee','Manager')),
     ProfilePicture NVARCHAR(500) NULL,
-    DepartmentId not NULL,
+    DepartmentId int not NULL,
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (DepartmentId) REFERENCES Departments(DeptId)
 );
@@ -141,3 +141,4 @@ CREATE TABLE Commits (
     FOREIGN KEY (PostId) REFERENCES Posts(PostId),
     FOREIGN KEY (ManagerId) REFERENCES Managers(ManagerId)
 );
+
