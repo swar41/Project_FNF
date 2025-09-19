@@ -1,0 +1,114 @@
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Recruitment', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Employee Engagement', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Payroll', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Performance Management', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Training and Development', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('HR Policies', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Onboarding', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Leave Management', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Compliance', 6);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Exit Interviews', 6);
+
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Title Search', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Underwriting', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Escrow Services', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Closing Disclosure', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Lien Checks', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Title Clearance', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Policy Issuance', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Title Commitment', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Settlement Services', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Ownership Verification', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Legal Description Review', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Deed Recording', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Title Claims', 7);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Property Encumbrances', 7);
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Loan Origination', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Credit Evaluation', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Mortgage Underwriting', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Interest Rates', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Loan Processing', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Pre-Approval', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Closing Costs', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Loan Servicing', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Refinancing', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Mortgage Insurance', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Escrow Accounts', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Foreclosure', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Amortization', 8);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Debt-to-Income Ratio', 8);
+
+
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Budgeting', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Accounts Payable', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Accounts Receivable', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Financial Reporting', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Audit', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Taxation', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Cash Flow Management', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('General Ledger', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Bank Reconciliation', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Expense Tracking', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Payroll Accounting', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Compliance Reporting', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Cost Analysis', 9);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Investment Planning', 9);
+
+
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Software Development', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Version Control', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('DevOps', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Continuous Integration', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Code Review', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Unit Testing', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Agile Methodology', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Build Automation', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('IDE Tools', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Debugging Tools', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Package Management', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('API Development', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Containerization', 10);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Performance Monitoring', 10);
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Process Optimization', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Regulatory Compliance', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Risk Management', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Internal Controls', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Standard Operating Procedures', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Audit Readiness', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Operational Efficiency', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Policy Enforcement', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Incident Management', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Compliance Training', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Regulatory Reporting', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Business Continuity', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Vendor Compliance', 11);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Data Governance', 11);
+
+INSERT INTO Tags (TagName, DeptId) VALUES ('Policy Updates', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Company News', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Leadership Messages', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Employee Handbook', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Holiday Announcements', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Internal Memos', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('New Joiner Guides', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Remote Work Guidelines', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Code of Conduct', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Organizational Changes', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Event Announcements', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Compliance Notices', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Communication Protocols', 12);
+INSERT INTO Tags (TagName, DeptId) VALUES ('Brand Guidelines', 12);
+
+
+
+
+
+
+
+
