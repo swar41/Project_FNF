@@ -1,0 +1,122 @@
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Project_Version1.Data;
+using Project_Version1.DTOs;
+using Project_Version1.Helpers;
+
+namespace Project_Version1.Services
+{
+    public class AuthService
+    {
+        private readonly FnfKnowledgeBaseContext _db;
+        private readonly JwtHelper _jwt;
+        private readonly IMapper _mapper;
+        private readonly IWebHostEnvironment _env;
+
+        public AuthService(FnfKnowledgeBaseContext db, JwtHelper jwt, IMapper mapper, IWebHostEnvironment env)
+        {
+            _db = db;
+            _jwt = jwt;
+            _mapper = mapper;
+            _env = env;
+        }
+
+        public async Task<AuthResponseDto?> RegisterAsync(RegisterDto dto)
+        {
+            var exists = await _db.Users.AnyAsync(u => u.Email == dto.Email);
+            if (exists) return null;
+
+            var user = _mapper.Map<User>(dto);
+            user.PasswordHash = PasswordHasher.Hash(dto.Password);
+            user.CreatedAt = DateTime.UtcNow;
+
+            // Handle profile picture upload
+            if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/profile-pics");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.ProfilePicture.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ProfilePicture.CopyToAsync(stream);
+                }
+
+                user.ProfilePicture = $"/uploads/profile-pics/{fileName}";
+            }
+
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+
+            var token = _jwt.GenerateToken(user);
+            return new AuthResponseDto
+            {
+                Token = token,
+                UserId = user.UserId,
+                Role = user.Role ?? "Employee"
+            };
+        }
+        public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (user == null || !PasswordHasher.Verify(dto.Password, user.PasswordHash))
+                return null;
+
+            var token = _jwt.GenerateToken(user);
+            return new AuthResponseDto
+            {
+                Token = token,
+                UserId = user.UserId,
+                Role = user.Role ?? "Employee",
+                ProfilePicture = user.ProfilePicture // ✅ add this
+            };
+        }
+        public async Task<UserDto?> UpdateProfileAsync(int userId, UserUpdateDto dto)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return null;
+
+            // Update basic fields
+            if (!string.IsNullOrEmpty(dto.FullName))
+                user.FullName = dto.FullName;
+
+            if (dto.DepartmentId.HasValue)
+                user.DepartmentId = dto.DepartmentId.Value;
+
+            if(!string.IsNullOrEmpty(dto.Email))
+                user.Email = dto.Email;
+            if (!string.IsNullOrEmpty(dto.Password))
+                user.PasswordHash = PasswordHasher.Hash(dto.Password);
+            if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads/profile-pics");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.ProfilePicture.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await dto.ProfilePicture.CopyToAsync(stream);
+                }
+                if (!string.IsNullOrEmpty(user.ProfilePicture))
+                {
+                    var oldFile = Path.Combine(_env.WebRootPath, user.ProfilePicture.TrimStart('/'));
+                    if (File.Exists(oldFile))
+                        File.Delete(oldFile);
+                }
+
+                user.ProfilePicture = $"/uploads/profile-pics/{fileName}";
+            }
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<UserDto>(user);
+        }
+    }
+}
