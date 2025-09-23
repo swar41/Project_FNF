@@ -232,6 +232,7 @@ namespace Project_Version1.Controllers
             }
         }
 
+        
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, [FromQuery] bool force = false)
@@ -240,32 +241,26 @@ namespace Project_Version1.Controllers
             {
                 var comment = await _commentService.GetCommentAsync(id);
                 if (comment == null) return NotFound();
-
                 var role = User.FindFirstValue(ClaimTypes.Role);
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-                // Authorization check
                 if (role == "Manager")
                 {
                     var manager = await _db.Managers.FirstOrDefaultAsync(m => m.UserId == userId && m.DeptId == comment.Post.DeptId);
                     if (manager == null) return Forbid();
                     _db.Commits.Add(new Commit { PostId = comment.PostId, ManagerId = manager.ManagerId, Message = $"Deleted comment {id}" });
-                }
-                else if (comment.UserId != userId)
-                {
-                    return Forbid();
+                    if (force)
+                    {
+                        await _commentService.ForceDeleteCommentAsync(comment);
+                    }
+                    else
+                    {
+                        await _commentService.DeleteCommentAsync(comment);
+                    }
+                    return NoContent();
+
                 }
 
-                if (force)
-                {
-                    await _commentService.ForceDeleteCommentAsync(comment);
-                }
-                else
-                {
-                    await _commentService.DeleteCommentAsync(comment);
-                }
-
-                return NoContent();
+                return Forbid();
             }
             catch (Exception ex)
             {
@@ -426,33 +421,33 @@ namespace Project_Version1.Controllers
         }
 
         [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id, [FromQuery] string? commitMessage = null)
+[HttpDelete("{id}")]
+public async Task<IActionResult> Delete(int id, [FromQuery] string? commitMessage = null)
+{
+    var post = await _db.Posts.FindAsync(id);
+    if (post == null) return NotFound();
+
+    
+    var role = User.FindFirstValue(ClaimTypes.Role);
+    var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    if (role == "Manager")
+    {
+        var manager = await _db.Managers.FirstOrDefaultAsync(m => m.UserId == userId && m.DeptId == post.DeptId);
+        if (manager == null) return Forbid();
+        if (!string.IsNullOrEmpty(commitMessage))
         {
-            var post = await _db.Posts.FindAsync(id);
-            if (post == null) return NotFound();
-
-            
-            var role = User.FindFirstValue(ClaimTypes.Role);
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-            if (role == "Manager")
-            {
-                var manager = await _db.Managers.FirstOrDefaultAsync(m => m.UserId == userId && m.DeptId == post.DeptId);
-                if (manager == null) return Forbid();
-                if (!string.IsNullOrEmpty(commitMessage))
-                {
-                    _db.Commits.Add(new Commit { PostId = id, ManagerId = manager.UserId, Message = commitMessage });
-                }
-            }
-            else if (post.UserId != userId)
-            {
-                return Forbid();
-            }
-
-            await _postService.DeletePostAsync(post);
-            return NoContent();
+            _db.Commits.Add(new Commit { PostId = id, ManagerId = manager.UserId, Message = commitMessage });
         }
+        await _postService.DeletePostAsync(post);
+        return NoContent();
+    }
+    
+        return Forbid();
+    
+
+   
+}
 
         [Authorize]
         [HttpPost("{id}/repost")]
@@ -2368,4 +2363,3 @@ namespace Project_Version1.Services
         }
     }
 }
-
