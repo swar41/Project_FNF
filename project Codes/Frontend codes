@@ -1,0 +1,2818 @@
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "./GuestPage.css"; // This should include both header and QnA styles
+
+const posts = [
+  {
+    title: "How to connect to company VPN",
+    content:
+      "Step-by-step: open VPN client, add server address, use corporate credentials. If MFA enabled, approve on your device. Troubleshoot: check firewall, DNS, and certificates.",
+    tags: ["VPN", "IT"],
+    dept: "Dept-4",
+    updates: 12,
+    downvotes: 0,
+    datetime: "19-9-2025, 10:51:21 pm",
+  },
+  {
+    title: "How to raise leave request",
+    content:
+      "Open HR portal → My Requests → New Leave. Select dates, reason and approver. Attach docs if needed. Manager gets a notification.",
+    tags: ["HR", "Leave"],
+    dept: "Dept-6",
+    updates: 8,
+    downvotes: 0,
+    datetime: "19-9-2025, 10:57:11 pm",
+  },
+  {
+    title: "Setup local SQL Server",
+    content:
+      "Install SQL Server Express, enable TCP/IP, create SQL auth user and update connection string in appsettings.json.",
+    tags: ["SQL", "Server"],
+    dept: "Dept-6",
+    updates: 10,
+    downvotes: 0,
+    datetime: "19-9-2025, 11:11:43 pm",
+  },
+];
+
+function GuestPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/feed", { replace: true });
+    }
+  }, [navigate]);
+
+  return (
+    <div className="guest-page">
+      {/* Header Section */}
+      <header className="header-container">
+        <div className="top-nav">
+          <div className="nav-left">
+            <div className="logo-container">
+              <img src="/public/resouces/Screenshot 2025-09-24 103516.png"></img>
+            </div>
+          </div>
+          <div className="nav-right">
+            <button className="nav-btn" onClick={() => navigate("/signup")}>
+              Sign Up
+            </button>
+            <button className="nav-btn" onClick={() => navigate("/login")}>
+              Login
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Welcome Section */}
+      <section className="guest-header">
+        <h1>Welcome to FNF Knowledge Hub</h1>
+        {/* <p>Please login or sign up to continue.</p> */}
+      </section>
+
+      {/* QnAHub Section */}
+      <div className="qna-container">
+        {/* <h2 className="qna-header">FNF Knowledge Hub</h2>
+        <div className="qna-helptext">You may view up to 3 posts. Viewed: 1.</div> */}
+        {posts.map((p, idx) => (
+          <div className="qna-post" key={idx}>
+            <div className="qna-title">{p.title}</div>
+            <div className="qna-content">{p.content}</div>
+            <div className="qna-meta">
+              {p.tags.map((tag) => (
+                <span className="qna-tag" key={tag}>{tag}</span>
+              ))}
+              <span className="qna-dept">{p.dept}</span>
+            </div>
+            <div className="qna-footer">
+              <span className="qna-updates">
+                Updates: {p.updates} • Downvotes: {p.downvotes} • {p.datetime}
+              </span>
+              <button className="qna-btn">Read More</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default GuestPage;
+bbj// =================================================================
+// FNF Knowledge Hub - Complete Frontend Code
+// Enhanced React Frontend with Modern UI/UX
+// =================================================================
+
+// -----------------------------------------------------------------
+// package.json
+// -----------------------------------------------------------------
+{
+  "name": "fnf-kb-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.14.1",
+    "react-markdown": "^8.0.7",
+    "remark-gfm": "^3.0.1",
+    "rehype-highlight": "^6.0.3",
+    "clsx": "^1.2.1",
+    "dayjs": "^1.11.9"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^5.1.0"
+  }
+}
+
+// -----------------------------------------------------------------
+// vite.config.js
+// -----------------------------------------------------------------
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({ 
+  plugins: [react()],
+  server: {
+    port: 3000
+  }
+})
+
+// -----------------------------------------------------------------
+// index.html
+// -----------------------------------------------------------------
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FNF Knowledge Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
+
+// -----------------------------------------------------------------
+// .env.example
+// -----------------------------------------------------------------
+# API Configuration
+VITE_API_BASE=http://localhost:5000/api
+
+# Optional: Environment
+VITE_NODE_ENV=development
+
+// -----------------------------------------------------------------
+// src/styles/global.css
+// -----------------------------------------------------------------
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+/* Header */
+.header {
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #007bff;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #007bff;
+  color: #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+/* Cards */
+.card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Forms */
+input, textarea, select {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Typography */
+h1, h2, h3 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+/* Links */
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  padding: 1rem;
+}
+
+.mobile-sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+.sidebar-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Guest Page */
+.guest-hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.guest-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.guest-hero p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Post Card */
+.post-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.post-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+}
+
+.post-title:hover {
+  color: #007bff;
+}
+
+.post-preview {
+  color: #6c757d;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.post-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #6c757d;
+  border-top: 1px solid #f8f9fa;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.post-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.post-stats span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  background: #e9ecef;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Comments */
+.comment {
+  border-left: 3px solid #e9ecef;
+  padding-left: 1rem;
+  margin: 1rem 0;
+}
+
+.comment-header {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.comment-body {
+  margin-bottom: 0.5rem;
+}
+
+.comment-replies {
+  margin-left: 1rem;
+  margin-top: 1rem;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+/* Search */
+.search-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.search-filters input,
+.search-filters select {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 1rem;
+  }
+  
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .guest-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .search-filters {
+    flex-direction: column;
+  }
+  
+  .search-filters input,
+  .search-filters select {
+    min-width: unset;
+  }
+  
+  .post-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+  
+  .nav-buttons {
+    display: none;
+  }
+}
+
+/* Markdown content */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content p {
+  margin-bottom: 1rem;
+}
+
+.markdown-content pre {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.markdown-content code {
+  background: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+// -----------------------------------------------------------------
+// src/main.jsx
+// -----------------------------------------------------------------
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+import './styles/global.css'
+
+createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+)
+
+// -----------------------------------------------------------------
+// src/api.js
+// -----------------------------------------------------------------
+import axios from 'axios'
+
+const api = axios.create({ 
+  baseURL: import.meta.env.VITE_API_BASE || 'http://localhost:5000/api',
+  timeout: 10000
+})
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('fnf_token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// Response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth and redirect to login
+      localStorage.clear()
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
+export default api
+
+// -----------------------------------------------------------------
+// src/utils/auth.js
+// -----------------------------------------------------------------
+export function saveAuth({ token, userId, role, profilePicture, fullName }) {
+  localStorage.setItem('fnf_token', token)
+  localStorage.setItem('fnf_userId', userId)
+  localStorage.setItem('fnf_role', role)
+  if (profilePicture) localStorage.setItem('fnf_profile', profilePicture)
+  if (fullName) localStorage.setItem('fnf_fullName', fullName)
+}
+
+export function logout() { 
+  localStorage.clear()
+}
+
+export function getAuth() { 
+  return { 
+    token: localStorage.getItem('fnf_token'), 
+    userId: localStorage.getItem('fnf_userId'), 
+    role: localStorage.getItem('fnf_role'), 
+    profile: localStorage.getItem('fnf_profile'),
+    fullName: localStorage.getItem('fnf_fullName')
+  } 
+}
+
+export function isAuthenticated() {
+  return !!localStorage.getItem('fnf_token')
+}
+
+// -----------------------------------------------------------------
+// src/App.jsx
+// -----------------------------------------------------------------
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Home from './pages/Home'
+import Feed from './pages/Feed'
+import PostDetails from './pages/PostDetails'
+import NewPost from './pages/NewPost'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Profile from './pages/Profile'
+import Commits from './pages/Commits'
+import { isAuthenticated } from './utils/auth'
+
+function RequireAuth({ children }) {
+  return isAuthenticated() ? children : <Navigate to="/login" replace />
+}
+
+function RequireGuest({ children }) {
+  return !isAuthenticated() ? children : <Navigate to="/feed" replace />
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/feed" element={<RequireAuth><Feed /></RequireAuth>} />
+      <Route path="/post/:id" element={<PostDetails />} />
+      <Route path="/new" element={<RequireAuth><NewPost /></RequireAuth>} />
+      <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+      <Route path="/commits" element={<RequireAuth><Commits /></RequireAuth>} />
+      <Route path="/login" element={<RequireGuest><Login /></RequireGuest>} />
+      <Route path="/signup" element={<RequireGuest><Signup /></RequireGuest>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
+
+// -----------------------------------------------------------------
+// src/components/Navbar.jsx
+// -----------------------------------------------------------------
+import React, { useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { logout, getAuth, isAuthenticated } from '../utils/auth'
+
+export default function Navbar() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const auth = getAuth()
+  const authenticated = isAuthenticated()
+
+  function handleLogout() {
+    logout()
+    navigate('/login')
+  }
+
+  return (
+    <>
+      <header className="header">
+        <div className="header-content">
+          <Link to={authenticated ? "/feed" : "/"} className="logo">
+            FNF Knowledge Hub
+          </Link>
+
+          {/* Desktop Navigation */}
+          <nav className="nav-buttons">
+            {authenticated ? (
+              <>
+                <Link to="/feed" className="btn btn-outline">Feed</Link>
+                <Link to="/new" className="btn">New Post</Link>
+                <Link to="/profile" className="btn btn-secondary">Profile</Link>
+                <button className="btn btn-secondary" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-outline">Login</Link>
+                <Link to="/signup" className="btn">Sign Up</Link>
+              </>
+            )}
+          </nav>
+
+          {/* Mobile Hamburger */}
+          <button 
+            className="hamburger"
+            onClick={() => setSidebarOpen(true)}
+          >
+            ☰
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile Sidebar */}
+      {sidebarOpen && (
+        <>
+          <div 
+            className="sidebar-overlay" 
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div className="mobile-sidebar open">
+            <button 
+              className="sidebar-close"
+              onClick={() => setSidebarOpen(false)}
+            >
+              ✕
+            </button>
+
+            <div style={{ marginTop: '3rem' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Menu</h3>
+              
+              {authenticated ? (
+                <div className="flex flex-col gap-2">
+                  <Link 
+                    to="/feed" 
+                    className="btn"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    Feed
+                  </Link>
+                  <Link 
+                    to="/new" 
+                    className="btn"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    New Post
+                  </Link>
+                  <Link 
+                    to="/profile" 
+                    className="btn btn-secondary"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                  <Link 
+                    to="/commits" 
+                    className="btn btn-secondary"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    Commits
+                  </Link>
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <Link 
+                    to="/login" 
+                    className="btn btn-outline"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/signup" 
+                    className="btn"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
+// -----------------------------------------------------------------
+// src/components/PostCard.jsx
+// -----------------------------------------------------------------
+import React from 'react'
+import { Link } from 'react-router-dom'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
+
+export default function PostCard({ post }) {
+  const truncateContent = (content, maxLength = 200) => {
+    if (!content) return ''
+    return content.length > maxLength 
+      ? content.substring(0, maxLength) + '...' 
+      : content
+  }
+
+  return (
+    <div className="post-card">
+      {post.isRepost && (
+        <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '0.5rem' }}>
+          🔄 Reposted by {post.repostedBy}
+        </div>
+      )}
+      
+      <Link to={`/post/${post.postId || post.id}`} className="post-title">
+        {post.title}
+      </Link>
+      
+      <div className="post-preview">
+        {truncateContent(post.bodyPreview || post.content || post.body)}
+      </div>
+
+      {/* Tags */}
+      {post.tags && post.tags.length > 0 && (
+        <div style={{ marginBottom: '1rem' }}>
+          {post.tags.map((tag, index) => (
+            <span key={index} className="tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="post-meta">
+        <div>
+          <strong>{post.authorName || post.author}</strong>
+          {post.dept && <span> • {post.dept}</span>}
+          <div style={{ fontSize: '0.75rem', color: '#6c757d' }}>
+            {dayjs(post.createdAt || post.datetime).fromNow()}
+          </div>
+        </div>
+        
+        <div className="post-stats">
+          <span title="Upvotes">
+            ▲ {post.upvoteCount || post.updates || 0}
+          </span>
+          <span title="Downvotes">
+            ▼ {post.downvoteCount || post.downvotes || 0}
+          </span>
+          <span title="Comments">
+            💬 {post.commentsCount || post.comments || 0}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// -----------------------------------------------------------------
+// src/pages/Home.jsx
+// -----------------------------------------------------------------
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { isAuthenticated } from '../utils/auth'
+import Navbar from '../components/Navbar'
+import PostCard from '../components/PostCard'
+
+// Mock data for guest users
+const samplePosts = [
+  {
+    id: '1',
+    title: 'How to connect to company VPN',
+    content: 'Step-by-step: open VPN client, add server address, use corporate credentials. If MFA enabled, approve on your device. Troubleshoot: check firewall, DNS, and certificates.',
+    tags: ['VPN', 'IT', 'Security'],
+    dept: 'IT Department',
+    authorName: 'John Smith',
+    updates: 12,
+    downvotes: 0,
+    comments: 3,
+    createdAt: '2025-09-19T22:51:21Z'
+  },
+  {
+    id: '2',
+    title: 'How to raise leave request',
+    content: 'Open HR portal → My Requests → New Leave. Select dates, reason and approver. Attach docs if needed. Manager gets a notification.',
+    tags: ['HR', 'Leave', 'Process'],
+    dept: 'HR Department',
+    authorName: 'Sarah Johnson',
+    updates: 8,
+    downvotes: 0,
+    comments: 5,
+    createdAt: '2025-09-19T22:57:11Z'
+  },
+  {
+    id: '3',
+    title: 'Setup local SQL Server',
+    content: 'Install SQL Server Express, enable TCP/IP, create SQL auth user and update connection string in appsettings.json. Remember to configure firewall rules.',
+    tags: ['SQL', 'Server', 'Development'],
+    dept: 'Development',
+    authorName: 'Mike Chen',
+    updates: 10,
+    downvotes: 1,
+    comments: 7,
+    createdAt: '2025-09-19T23:11:43Z'
+  },
+  {
+    id: '4',
+    title: 'Best practices for code reviews',
+    content: 'Always review for functionality, security, and maintainability. Use automated tools, focus on logic and potential bugs, provide constructive feedback.',
+    tags: ['Code Review', 'Best Practices', 'Development'],
+    dept: 'Development',
+    authorName: 'Emily Davis',
+    updates: 15,
+    downvotes: 0,
+    comments: 12,
+    createdAt: '2025-09-20T09:30:00Z'
+  }
+]
+
+export default function Home() {
+  const navigate = useNavigate()
+  const [viewedCount, setViewedCount] = useState(0)
+  const maxViewsForGuest = 3
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/feed', { replace: true })
+    }
+  }, [navigate])
+
+  const handlePostClick = (postId) => {
+    if (viewedCount >= maxViewsForGuest) {
+      navigate('/login')
+      return
+    }
+    setViewedCount(prev => prev + 1)
+    navigate(`/post/${postId}`)
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="guest-hero">
+        <div className="container">
+          <h1>Welcome to FNF Knowledge Hub</h1>
+          <p>Discover solutions, share knowledge, and collaborate with your team</p>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <main className="container">
+        <div style={{ marginBottom: '2rem' }}>
+          <h2>Recent Knowledge Posts</h2>
+          {viewedCount < maxViewsForGuest ? (
+            <p style={{ color: '#6c757d', fontSize: '0.9rem' }}>
+              You can view {maxViewsForGuest - viewedCount} more post{maxViewsForGuest - viewedCount !== 1 ? 's' : ''} as a guest. 
+              <a href="/signup" style={{ marginLeft: '0.5rem' }}>Sign up</a> for unlimited access.
+            </p>
+          ) : (
+            <div className="card" style={{ textAlign: 'center', background: '#f8f9fa' }}>
+              <h3>Guest View Limit Reached</h3>
+              <p>You've reached the maximum number of posts you can view as a guest.</p>
+              <div className="flex gap-2" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+                <button className="btn" onClick={() => navigate('/signup')}>
+                  Sign Up for Free
+                </button>
+                <button className="btn btn-outline" onClick={() => navigate('/login')}>
+                  Login
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div>
+          {samplePosts.map(post => (
+            <div key={post.id} onClick={() => handlePostClick(post.id)} style={{ cursor: 'pointer' }}>
+              <PostCard post={post} />
+            </div>
+          ))}
+        </div>
+
+        {/* Call to Action */}
+        <div className="card" style={{ textAlign: 'center', marginTop: '2rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+          <h3 style={{ color: 'white' }}>Join FNF Knowledge Hub Today</h3>
+          <p>Access unlimited posts, create your own content, and collaborate with your team.</p>
+          <div className="flex gap-2" style={{ justifyContent: 'center', marginTop: '1rem' }}>
+            <button className="btn" style={{ background: 'white', color: '#333' }} onClick={() => navigate('/signup')}>
+              Get Started
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+// -----------------------------------------------------------------
+// src/pages/Feed.jsx
+// -----------------------------------------------------------------
+
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import api from '../api'
+import Navbar from '../components/Navbar'
+import PostCard from '../components/PostCard'
+
+export default function Feed() {
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [tag, setTag] = useState('')
+  const [dept, setDept] = useState('')
+  const [departments, setDepartments] = useState([])
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  const isMine = searchParams.get('mine') === 'true'
+
+  useEffect(() => {
+    fetchDepartments()
+    fetchFeed()
+  }, [tag, dept, isMine])
+
+  async function fetchDepartments() {
+    try {
+      const response = await api.get('/departments')
+      setDepartments(response.data)
+    } catch (error) {
+      console.error('Failed to fetch departments:', error)
+    }
+  }
+
+  async function fetchFeed() {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      
+      if (dept) params.set('deptId', dept)
+      if (tag) params.set('tag', tag)
+      if (isMine) params.set('mine', 'true')
+
+      const endpoint = isMine ? '/posts/mine' : '/posts/feed'
+      const response = await api.get(`${endpoint}?${params.toString()}`)
+      setPosts(response.data)
+    } catch (error) {
+      console.error('Failed to fetch posts:', error)
+      setPosts([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleSearch(e) {
+    e.preventDefault()
+    fetchFeed()
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '2rem' }}>
+        {/* Page Header */}
+        <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+          <h1>{isMine ? 'My Posts' : 'Knowledge Feed'}</h1>
+          <button 
+            className="btn"
+            onClick={() => navigate('/new')}
+          >
+            + New Post
+          </button>
+        </div>
+
+        {/* Search and Filters */}
+        <form onSubmit={handleSearch} className="card">
+          <div className="search-filters">
+            <input
+              type="text"
+              placeholder="Search tags..."
+              value={tag}
+              onChange={e => setTag(e.target.value)}
+            />
+            <select 
+              value={dept} 
+              onChange={e => setDept(e.target.value)}
+            >
+              <option value="">All Departments</option>
+              {departments.map(d => (
+                <option key={d.departmentId} value={d.departmentId}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="btn" style={{ minWidth: 'auto', padding: '0.75rem 1.5rem' }}>
+              Search
+            </button>
+          </div>
+        </form>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-2" style={{ marginBottom: '2rem' }}>
+          <button 
+            className={`btn ${!isMine ? '' : 'btn-outline'}`}
+            onClick={() => navigate('/feed')}
+          >
+            All Posts
+          </button>
+          <button 
+            className={`btn ${isMine ? '' : 'btn-outline'}`}
+            onClick={() => navigate('/feed?mine=true')}
+          >
+            My Posts
+          </button>
+        </div>
+
+        {/* Posts */}
+        {loading ? (
+          <div className="loading">
+            <p>Loading posts...</p>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+            <h3>{isMine ? 'No posts created yet' : 'No posts found'}</h3>
+            <p style={{ color: '#6c757d', marginBottom: '1rem' }}>
+              {isMine 
+                ? 'Create your first post to share knowledge with your team.'
+                : 'Try adjusting your search filters or create a new post.'
+              }
+            </p>
+            <button className="btn" onClick={() => navigate('/new')}>
+              Create Post
+            </button>
+          </div>
+        ) : (
+          <div>
+            {posts.map(post => (
+              <PostCard key={post.postId} post={post} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
+
+src/pages/PostDetails.jsx
+
+
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import api from '../api'
+import Navbar from '../components/Navbar'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { isAuthenticated, getAuth } from '../utils/auth'
+
+dayjs.extend(relativeTime)
+
+export default function PostDetails() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [post, setPost] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [voting, setVoting] = useState(false)
+  const auth = getAuth()
+
+  useEffect(() => {
+    fetchPost()
+  }, [id])
+
+  async function fetchPost() {
+    try {
+      setLoading(true)
+      const response = await api.get(`/posts/${id}`)
+      setPost(response.data)
+    } catch (error) {
+      console.error('Failed to fetch post:', error)
+      if (error.response?.status === 404) {
+        navigate('/feed')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleVote(type) {
+    if (!isAuthenticated()) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      setVoting(true)
+      await api.post(`/posts/${id}/vote`, { type })
+      await fetchPost() // Refresh post data
+    } catch (error) {
+      console.error('Failed to vote:', error)
+    } finally {
+      setVoting(false)
+    }
+  }
+
+  async function handleRepost() {
+    if (!isAuthenticated()) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      await api.post(`/posts/${id}/repost`)
+      alert('Post reposted successfully!')
+    } catch (error) {
+      console.error('Failed to repost:', error)
+      alert('Failed to repost')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="container loading">
+          <p>Loading post...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!post) {
+    return (
+      <div>
+        <Navbar />
+        <div className="container">
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h2>Post not found</h2>
+            <button className="btn" onClick={() => navigate('/feed')}>
+              Back to Feed
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '2rem' }}>
+        <button 
+          className="btn btn-outline" 
+          onClick={() => navigate(-1)}
+          style={{ marginBottom: '1rem' }}
+        >
+          ← Back
+        </button>
+
+        <article className="card">
+          <header style={{ marginBottom: '1.5rem', borderBottom: '1px solid #e9ecef', paddingBottom: '1rem' }}>
+            <h1 style={{ marginBottom: '0.5rem' }}>{post.title}</h1>
+            
+            <div className="flex justify-between items-center">
+              <div>
+                <strong>{post.authorName}</strong>
+                {post.department && <span> • {post.department}</span>}
+                <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                  {dayjs(post.createdAt).format('MMMM D, YYYY at h:mm A')} 
+                  <span style={{ marginLeft: '0.5rem' }}>
+                    ({dayjs(post.createdAt).fromNow()})
+                  </span>
+                </div>
+              </div>
+              
+              {isAuthenticated() && (
+                <div className="flex gap-2">
+                  <button 
+                    className="btn btn-outline" 
+                    onClick={handleRepost}
+                    style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                  >
+                    🔄 Repost
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div style={{ marginTop: '1rem' }}>
+                {post.tags.map((tag, index) => (
+                  <span key={index} className="tag">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </header>
+
+          {/* Post Content */}
+          <div className="markdown-content">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]} 
+              rehypePlugins={[rehypeHighlight]}
+            >
+              {post.body}
+            </ReactMarkdown>
+          </div>
+
+          {/* Attachments */}
+          {post.attachments && post.attachments.length > 0 && (
+            <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '6px' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Attachments</h3>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {post.attachments.map(attachment => (
+                  <li key={attachment.attachmentId} style={{ marginBottom: '0.5rem' }}>
+                    <a 
+                      href={attachment.filePath} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      📎 {attachment.fileName}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Voting and Stats */}
+          <footer style={{ marginTop: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '6px' }}>
+            <div className="flex justify-between items-center">
+              <div className="flex gap-4">
+                <button 
+                  className={`btn ${voting ? 'btn-secondary' : 'btn-outline'}`}
+                  onClick={() => handleVote('upvote')}
+                  disabled={voting || !isAuthenticated()}
+                  title={!isAuthenticated() ? 'Login to vote' : 'Upvote'}
+                >
+                  ▲ {post.upvoteCount || 0}
+                </button>
+                <button 
+                  className={`btn ${voting ? 'btn-secondary' : 'btn-outline'}`}
+                  onClick={() => handleVote('downvote')}
+                  disabled={voting || !isAuthenticated()}
+                  title={!isAuthenticated() ? 'Login to vote' : 'Downvote'}
+                >
+                  ▼ {post.downvoteCount || 0}
+                </button>
+              </div>
+              
+              <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                💬 {post.commentsCount || 0} comments
+              </div>
+            </div>
+
+            {!isAuthenticated() && (
+              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.9rem', color: '#6c757d', marginBottom: '0.5rem' }}>
+                  Want to vote or comment? 
+                </p>
+                <button className="btn" onClick={() => navigate('/login')}>
+                  Login to Participate
+                </button>
+              </div>
+            )}
+          </footer>
+        </article>
+
+        {/* Comments Section */}
+        <Comments postId={post.postId} />
+      </main>
+    </div>
+  )
+}
+
+function Comments({ postId }) {
+  const [comments, setComments] = useState([])
+  const [newComment, setNewComment] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    fetchComments()
+  }, [postId])
+
+  async function fetchComments() {
+    try {
+      setLoading(true)
+      const response = await api.get(`/comments/post/${postId}?hierarchical=true`)
+      setComments(response.data)
+    } catch (error) {
+      console.error('Failed to fetch comments:', error)
+      setComments([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function submitComment() {
+    if (!isAuthenticated()) {
+      navigate('/login')
+      return
+    }
+
+    if (!newComment.trim()) return
+
+    try {
+      setSubmitting(true)
+      await api.post('/comments', { 
+        postId, 
+        commentText: newComment.trim() 
+      })
+      setNewComment('')
+      await fetchComments()
+    } catch (error) {
+      console.error('Failed to post comment:', error)
+      alert('Failed to post comment')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <section className="card" style={{ marginTop: '2rem' }}>
+      <h2>Comments ({comments.length})</h2>
+
+      {/* Comment Form */}
+      {isAuthenticated() ? (
+        <div style={{ marginBottom: '2rem' }}>
+          <textarea
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+            placeholder="Write a comment..."
+            rows={4}
+            style={{ marginBottom: '1rem' }}
+          />
+          <button 
+            className="btn" 
+            onClick={submitComment}
+            disabled={submitting || !newComment.trim()}
+          >
+            {submitting ? 'Posting...' : 'Post Comment'}
+          </button>
+        </div>
+      ) : (
+        <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '6px', textAlign: 'center' }}>
+          <p>Want to join the discussion?</p>
+          <button className="btn" onClick={() => navigate('/login')}>
+            Login to Comment
+          </button>
+        </div>
+      )}
+
+      {/* Comments List */}
+      {loading ? (
+        <div className="loading">
+          <p>Loading comments...</p>
+        </div>
+      ) : comments.length === 0 ? (
+        <p style={{ color: '#6c757d', textAlign: 'center', padding: '2rem' }}>
+          No comments yet. Be the first to comment!
+        </p>
+      ) : (
+        <div>
+          {comments.map(comment => (
+            <CommentItem key={comment.commentId} comment={comment} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function CommentItem({ comment }) {
+  return (
+    <div className="comment">
+      <div className="comment-header">
+        <strong>{comment.authorName}</strong>
+        <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+          {dayjs(comment.createdAt).fromNow()}
+        </span>
+      </div>
+      
+      <div className="comment-body">
+        {comment.commentText}
+      </div>
+
+      {/* Replies */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="comment-replies">
+          {comment.replies.map(reply => (
+            <CommentItem key={reply.commentId} comment={reply} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+src/pages/NewPost.jsx
+
+
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../api'
+import Navbar from '../components/Navbar'
+
+export default function NewPost() {
+  const [title, setTitle] = useState('')
+  const [body, setBody] = useState('')
+  const [tags, setTags] = useState('')
+  const [files, setFiles] = useState([])
+  const [submitting, setSubmitting] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const navigate = useNavigate()
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    
+    if (!title.trim() || !body.trim()) {
+      alert('Please fill in both title and content')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      
+      const formData = new FormData()
+      formData.append('Title', title.trim())
+      formData.append('Body', body.trim())
+      
+      // Handle tags
+      const tagList = tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0)
+      
+      tagList.forEach(tag => formData.append('Tags', tag))
+      
+      // Handle file attachments
+      for (const file of files) {
+        formData.append('Attachments', file)
+      }
+
+      const response = await api.post('/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      // Redirect to the created post
+      navigate(`/post/${response.data.postId}`)
+    } catch (error) {
+      console.error('Failed to create post:', error)
+      alert('Failed to create post. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  function handleFileChange(e) {
+    const selectedFiles = Array.from(e.target.files)
+    
+    // Basic file validation
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    const validFiles = selectedFiles.filter(file => {
+      if (file.size > maxSize) {
+        alert(`File ${file.name} is too large. Maximum size is 10MB.`)
+        return false
+      }
+      return true
+    })
+    
+    setFiles(validFiles)
+  }
+
+  function removeFile(index) {
+    setFiles(files.filter((_, i) => i !== index))
+  }
+
+  const previewContent = body.split('\n').map((line, i) => (
+    <p key={i}>{line || <br />}</p>
+  ))
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '2rem' }}>
+        <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+          <h1>Create New Post</h1>
+          <button 
+            className="btn btn-outline" 
+            onClick={() => navigate('/feed')}
+          >
+            Cancel
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="card">
+            {/* Title Input */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Title *
+              </label>
+              <input
+                type="text"
+                placeholder="Enter a descriptive title for your post"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                maxLength={200}
+                required
+              />
+              <div style={{ fontSize: '0.8rem', color: '#6c757d', textAlign: 'right' }}>
+                {title.length}/200
+              </div>
+            </div>
+
+            {/* Content Editor */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div className="flex justify-between items-center" style={{ marginBottom: '0.5rem' }}>
+                <label style={{ fontWeight: 'bold' }}>
+                  Content * 
+                  <span style={{ fontWeight: 'normal', color: '#6c757d' }}>
+                    (Markdown supported)
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                  onClick={() => setShowPreview(!showPreview)}
+                >
+                  {showPreview ? 'Edit' : 'Preview'}
+                </button>
+              </div>
+
+              {showPreview ? (
+                <div 
+                  className="markdown-content"
+                  style={{ 
+                    border: '1px solid #ddd', 
+                    borderRadius: '6px', 
+                    padding: '1rem',
+                    minHeight: '300px',
+                    background: '#f8f9fa'
+                  }}
+                >
+                  {body ? previewContent : <p style={{ color: '#6c757d' }}>Preview will appear here...</p>}
+                </div>
+              ) : (
+                <textarea
+                  placeholder="Describe your problem, solution, or knowledge here. You can use Markdown formatting."
+                  value={body}
+                  onChange={e => setBody(e.target.value)}
+                  rows={12}
+                  required
+                />
+              )}
+
+              <div style={{ fontSize: '0.8rem', color: '#6c757d', marginTop: '0.5rem' }}>
+                💡 Tip: Use **bold**, *italic*, `code`, and [links](url) for better formatting
+              </div>
+            </div>
+
+            {/* Tags Input */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Tags
+              </label>
+              <input
+                type="text"
+                placeholder="Enter tags separated by commas (e.g., VPN, IT, Security)"
+                value={tags}
+                onChange={e => setTags(e.target.value)}
+              />
+              <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>
+                Tags help others find your post. Use relevant keywords.
+              </div>
+            </div>
+
+            {/* File Attachments */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Attachments
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif"
+              />
+              <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>
+                Maximum 10MB per file. Supported: PDF, DOC, TXT, images
+              </div>
+
+              {/* File List */}
+              {files.length > 0 && (
+                <div style={{ marginTop: '1rem' }}>
+                  <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>
+                    Selected Files:
+                  </p>
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {files.map((file, index) => (
+                      <li 
+                        key={index} 
+                        className="flex justify-between items-center"
+                        style={{ 
+                          padding: '0.5rem', 
+                          background: '#f8f9fa', 
+                          borderRadius: '4px', 
+                          marginBottom: '0.5rem' 
+                        }}
+                      >
+                        <span style={{ fontSize: '0.9rem' }}>
+                          📎 {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            color: '#dc3545', 
+                            cursor: 'pointer',
+                            fontSize: '1.2rem'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-2">
+              <button 
+                type="submit" 
+                className="btn"
+                disabled={submitting || !title.trim() || !body.trim()}
+              >
+                {submitting ? 'Creating Post...' : 'Create Post'}
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-secondary"
+                onClick={() => navigate('/feed')}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* Markdown Help */}
+        <div className="card" style={{ marginTop: '2rem', background: '#f8f9fa' }}>
+          <h3>Markdown Quick Reference</h3>
+          <div style={{ fontSize: '0.9rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+            <div>
+              <strong>Headers:</strong><br />
+              # H1<br />
+              ## H2<br />
+              ### H3
+            </div>
+            <div>
+              <strong>Text Format:</strong><br />
+              **bold text**<br />
+              *italic text*<br />
+              `inline code`
+            </div>
+            <div>
+              <strong>Lists:</strong><br />
+              - Item 1<br />
+              - Item 2<br />
+              1. Numbered item
+            </div>
+            <div>
+              <strong>Links & Images:</strong><br />
+              [Link text](URL)<br />
+              ![Image](URL)<br />
+              [Email](mailto:user@example.com)
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+src/pages/Login.jsx
+
+
+import React, { useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import api from '../api'
+import { saveAuth } from '../utils/auth'
+import Navbar from '../components/Navbar'
+
+export default function Login() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const from = location.state?.from?.pathname || '/feed'
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+
+    if (!email.trim() || !password.trim()) {
+      setError('Please fill in all fields')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await api.post('/auth/login', { 
+        email: email.trim(), 
+        password 
+      })
+
+      saveAuth(response.data)
+      navigate(from, { replace: true })
+    } catch (error) {
+      console.error('Login failed:', error)
+      if (error.response?.status === 401) {
+        setError('Invalid email or password')
+      } else if (error.response?.status === 400) {
+        setError('Please check your credentials')
+      } else {
+        setError('Login failed. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '4rem' }}>
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <div className="card">
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <h1>Welcome Back</h1>
+              <p style={{ color: '#6c757d' }}>Sign in to your account</p>
+            </div>
+
+            {error && (
+              <div style={{ 
+                background: '#f8d7da', 
+                color: '#721c24', 
+                padding: '0.75rem', 
+                borderRadius: '4px', 
+                marginBottom: '1rem',
+                border: '1px solid #f5c6cb'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn" 
+                style={{ width: '100%', marginBottom: '1rem' }}
+                disabled={loading}
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ color: '#6c757d' }}>
+                Don't have an account?{' '}
+                <Link to="/signup" style={{ fontWeight: 'bold' }}>
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          {/* Demo Credentials */}
+          <div className="card" style={{ marginTop: '1rem', background: '#f8f9fa' }}>
+            <h4 style={{ marginBottom: '0.5rem' }}>Demo Credentials</h4>
+            <p style={{ fontSize: '0.9rem', color: '#6c757d', marginBottom: '0.5rem' }}>
+              For testing purposes:
+            </p>
+            <div style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>
+              <div>Email: demo@fnf.com</div>
+              <div>Password: password123</div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+
+s
+
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import api from '../api'
+import { saveAuth } from '../utils/auth'
+import Navbar from '../components/Navbar'
+
+export default function Signup() {
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [departmentId, setDepartmentId] = useState('')
+  const [departments, setDepartments] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [passwordStrength, setPasswordStrength] = useState('')
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    fetchDepartments()
+  }, [])
+
+  useEffect(() => {
+    checkPasswordStrength(password)
+  }, [password])
+
+  async function fetchDepartments() {
+    try {
+      const response = await api.get('/departments')
+      setDepartments(response.data)
+    } catch (error) {
+      console.error('Failed to fetch departments:', error)
+    }
+  }
+
+  function checkPasswordStrength(pwd) {
+    if (!pwd) {
+      setPasswordStrength('')
+      return
+    }
+
+    if (pwd.length < 6) {
+      setPasswordStrength('weak')
+    } else if (pwd.length < 10 || !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(pwd)) {
+      setPasswordStrength('medium')
+    } else {
+      setPasswordStrength('strong')
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+
+    // Validation
+    if (!fullName.trim() || !email.trim() || !password || !confirmPassword) {
+      setError('Please fill in all required fields')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      return
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    try {
+      setLoading(true)
+      
+      const formData = new FormData()
+      formData.append('FullName', fullName.trim())
+      formData.append('Email', email.trim())
+      formData.append('Password', password)
+      if (departmentId) formData.append('DepartmentId', departmentId)
+
+      const response = await api.post('/auth/register', formData)
+      
+      saveAuth(response.data)
+      navigate('/feed')
+    } catch (error) {
+      console.error('Signup failed:', error)
+      if (error.response?.status === 400) {
+        setError(error.response.data?.message || 'Invalid registration data')
+      } else if (error.response?.status === 409) {
+        setError('An account with this email already exists')
+      } else {
+        setError('Registration failed. Please try again.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getPasswordStrengthColor = () => {
+    switch (passwordStrength) {
+      case 'weak': return '#dc3545'
+      case 'medium': return '#ffc107'
+      case 'strong': return '#28a745'
+      default: return '#6c757d'
+    }
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '4rem' }}>
+        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+          <div className="card">
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <h1>Join FNF Knowledge Hub</h1>
+              <p style={{ color: '#6c757d' }}>Create your account to get started</p>
+            </div>
+
+            {error && (
+              <div style={{ 
+                background: '#f8d7da', 
+                color: '#721c24', 
+                padding: '0.75rem', 
+                borderRadius: '4px', 
+                marginBottom: '1rem',
+                border: '1px solid #f5c6cb'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  placeholder="Enter your full name"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="Enter your work email"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Department
+                </label>
+                <select
+                  value={departmentId}
+                  onChange={e => setDepartmentId(e.target.value)}
+                  disabled={loading}
+                >
+                  <option value="">Select your department (optional)</option>
+                  {departments.map(dept => (
+                    <option key={dept.departmentId} value={dept.departmentId}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Create a strong password"
+                  required
+                  disabled={loading}
+                />
+                {password && (
+                  <div style={{ 
+                    fontSize: '0.8rem', 
+                    marginTop: '0.25rem',
+                    color: getPasswordStrengthColor()
+                  }}>
+                    Password strength: <strong>{passwordStrength || 'weak'}</strong>
+                    {passwordStrength === 'weak' && ' (too short)'}
+                    {passwordStrength === 'medium' && ' (add uppercase, numbers)'}
+                    {passwordStrength === 'strong' && ' ✓'}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                  Confirm Password *
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  disabled={loading}
+                />
+                {confirmPassword && password !== confirmPassword && (
+                  <div style={{ fontSize: '0.8rem', color: '#dc3545', marginTop: '0.25rem' }}>
+                    Passwords do not match
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" required />
+                  <span style={{ fontSize: '0.9rem' }}>
+                    I agree to the{' '}
+                    <Link to="/terms" style={{ fontWeight: 'bold' }}>
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link to="/privacy" style={{ fontWeight: 'bold' }}>
+                      Privacy Policy
+                    </Link>
+                  </span>
+                </label>
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn" 
+                style={{ width: '100%', marginBottom: '1rem' }}
+                disabled={loading || password !== confirmPassword}
+              >
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </form>
+
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ color: '#6c757d' }}>
+                Already have an account?{' '}
+                <Link to="/login" style={{ fontWeight: 'bold' }}>
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          {/* Benefits */}
+          <div className="card" style={{ marginTop: '2rem', background: '#f8f9fa' }}>
+            <h4 style={{ marginBottom: '1rem' }}>Why Join FNF Knowledge Hub?</h4>
+            <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
+              <li style={{ marginBottom: '0.5rem' }}>Access unlimited knowledge posts</li>
+              <li style={{ marginBottom: '0.5rem' }}>Share your expertise with colleagues</li>
+              <li style={{ marginBottom: '0.5rem' }}>Get help from your team instantly</li>
+              <li style={{ marginBottom: '0.5rem' }}>Track your contributions and commits</li>
+            </ul>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+}
+
+
+src/pages/Profile.jsx
+
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../api'
+import Navbar from '../components/Navbar'
+import PostCard from '../components/PostCard'
+import { getAuth } from '../utils/auth'
+
+export default function Profile() {
+  const [profile, setProfile] = useState(null)
+  const [userPosts, setUserPosts] = useState([])
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('posts')
+  const navigate = useNavigate()
+  const auth = getAuth()
+
+  useEffect(() => {
+    fetchProfile()
+    fetchUserPosts()
+    fetchStats()
+  }, [])
+
+  async function fetchProfile() {
+    try {
+      const response = await api.get('/users/me')
+      setProfile(response.data)
+    } catch (error) {
+      console.error('Failed to fetch profile:', error)
+    }
+  }
+
+  async function fetchUserPosts() {
+    try {
+      const response = await api.get('/posts/mine')
+      setUserPosts(response.data)
+    } catch (error) {
+      console.error('Failed to fetch user posts:', error)
+      setUserPosts([])
+    }
+  }
+
+  async function fetchStats() {
+    try {
+      const response = await api.get('/users/me/stats')
+      setStats(response.data)
+    } catch (error) {
+      console.error('Failed to fetch stats:', error)
+      // Mock stats if API doesn't exist
+      setStats({
+        totalPosts: userPosts.length,
+        totalUpvotes: userPosts.reduce((sum, post) => sum + (post.upvoteCount || 0), 0),
+        totalComments: userPosts.reduce((sum, post) => sum + (post.commentsCount || 0), 0),
+        totalCommits: 0
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="container loading">
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '2rem' }}>
+        {/* Profile Header */}
+        <div className="card">
+          <div className="flex gap-4 items-center">
+            <div style={{ 
+              width: '80px', 
+              height: '80px', 
+              borderRadius: '50%', 
+              background: profile?.profilePicture ? `url(${profile.profilePicture})` : '#007bff',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '2rem',
+              fontWeight: 'bold'
+            }}>
+              {!profile?.profilePicture && (profile?.fullName?.[0] || auth.fullName?.[0] || '?')}
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              <h1 style={{ marginBottom: '0.25rem' }}>
+                {profile?.fullName || auth.fullName || 'Unknown User'}
+              </h1>
+              <p style={{ color: '#6c757d', marginBottom: '0.5rem' }}>
+                {profile?.email || 'No email provided'}
+              </p>
+              {profile?.department && (
+                <p style={{ color: '#6c757d', fontSize: '0.9rem' }}>
+                  {profile.department} Department
+                </p>
+              )}
+            </div>
+
+            <button 
+              className="btn btn-outline"
+              onClick={() => navigate('/profile/edit')}
+            >
+              Edit Profile
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#007bff', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {stats?.totalPosts || userPosts.length}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Posts Created</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#28a745', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {stats?.totalUpvotes || userPosts.reduce((sum, post) => sum + (post.upvoteCount || 0), 0)}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Total Upvotes</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#ffc107', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {stats?.totalComments || userPosts.reduce((sum, post) => sum + (post.commentsCount || 0), 0)}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Comments Received</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#6f42c1', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {stats?.totalCommits || 0}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Commits Made</p>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="card">
+          <div className="flex gap-4" style={{ borderBottom: '1px solid #e9ecef', marginBottom: '1.5rem' }}>
+            <button
+              className={`btn ${activeTab === 'posts' ? '' : 'btn-outline'}`}
+              style={{ borderRadius: '0', borderBottom: activeTab === 'posts' ? '2px solid #007bff' : 'none' }}
+              onClick={() => setActiveTab('posts')}
+            >
+              My Posts ({userPosts.length})
+            </button>
+            <button
+              className={`btn ${activeTab === 'activity' ? '' : 'btn-outline'}`}
+              style={{ borderRadius: '0', borderBottom: activeTab === 'activity' ? '2px solid #007bff' : 'none' }}
+              onClick={() => setActiveTab('activity')}
+            >
+              Recent Activity
+            </button>
+            <button
+              className={`btn ${activeTab === 'settings' ? '' : 'btn-outline'}`}
+              style={{ borderRadius: '0', borderBottom: activeTab === 'settings' ? '2px solid #007bff' : 'none' }}
+              onClick={() => setActiveTab('settings')}
+            >
+              Settings
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'posts' && (
+            <div>
+              {userPosts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem' }}>
+                  <h3>No posts yet</h3>
+                  <p style={{ color: '#6c757d', marginBottom: '1rem' }}>
+                    You haven't created any posts. Share your knowledge with the team!
+                  </p>
+                  <button className="btn" onClick={() => navigate('/new')}>
+                    Create Your First Post
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {userPosts.map(post => (
+                    <PostCard key={post.postId} post={post} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'activity' && (
+            <div>
+              <h3>Recent Activity</h3>
+              <div style={{ color: '#6c757d', textAlign: 'center', padding: '2rem' }}>
+                <p>Activity feed coming soon...</p>
+                <p style={{ fontSize: '0.9rem' }}>
+                  This will show your recent votes, comments, and interactions.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div>
+              <h3>Account Settings</h3>
+              
+              <div style={{ marginBottom: '2rem' }}>
+                <h4>Notification Preferences</h4>
+                <label className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                  <input type="checkbox" defaultChecked />
+                  <span>Email notifications for comments on my posts</span>
+                </label>
+                <label className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                  <input type="checkbox" defaultChecked />
+                  <span>Email notifications for upvotes on my posts</span>
+                </label>
+                <label className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                  <input type="checkbox" />
+                  <span>Weekly digest of popular posts</span>
+                </label>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h4>Privacy Settings</h4>
+                <label className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                  <input type="checkbox" defaultChecked />
+                  <span>Show my posts in public feed</span>
+                </label>
+                <label className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                  <input type="checkbox" defaultChecked />
+                  <span>Allow others to see my profile</span>
+                </label>
+              </div>
+
+              <div className="flex gap-2">
+                <button className="btn">Save Settings</button>
+                <button className="btn btn-secondary">Reset to Default</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  )
+}
+
+src/pages/Commits.jsx
+
+
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import api from '../api'
+import Navbar from '../components/Navbar'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
+
+export default function Commits() {
+  const [commits, setCommits] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all') // all, approved, pending, rejected
+
+  useEffect(() => {
+    fetchCommits()
+  }, [])
+
+  async function fetchCommits() {
+    try {
+      setLoading(true)
+      const response = await api.get('/commits/mine')
+      setCommits(response.data)
+    } catch (error) {
+      console.error('Failed to fetch commits:', error)
+      setCommits([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'approved': return '#28a745'
+      case 'rejected': return '#dc3545'
+      case 'pending': return '#ffc107'
+      default: return '#6c757d'
+    }
+  }
+
+  const getStatusIcon = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'approved': return '✅'
+      case 'rejected': return '❌'
+      case 'pending': return '⏳'
+      default: return '📝'
+    }
+  }
+
+  const filteredCommits = commits.filter(commit => {
+    if (filter === 'all') return true
+    return commit.status?.toLowerCase() === filter
+  })
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="container loading">
+          <p>Loading commits...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <Navbar />
+      
+      <main className="container" style={{ marginTop: '2rem' }}>
+        <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+          <div>
+            <h1>Your Commits</h1>
+            <p style={{ color: '#6c757d' }}>
+              Track your contributions and knowledge updates
+            </p>
+          </div>
+        </div>
+
+        {/* Summary Cards */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#007bff', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {commits.length}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Total Commits</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#28a745', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {commits.filter(c => c.status?.toLowerCase() === 'approved').length}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Approved</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#ffc107', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {commits.filter(c => c.status?.toLowerCase() === 'pending').length}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Pending Review</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h3 style={{ color: '#dc3545', fontSize: '2rem', marginBottom: '0.5rem' }}>
+              {commits.filter(c => c.status?.toLowerCase() === 'rejected').length}
+            </h3>
+            <p style={{ color: '#6c757d' }}>Rejected</p>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="card">
+          <div className="flex gap-2" style={{ marginBottom: '1rem' }}>
+            <button 
+              className={`btn ${filter === 'approved' ? '' : 'btn-outline'}`}
+              onClick={() => setFilter('approved')}
+            >
+              Approved ({commits.filter(c => c.status?.toLowerCase() === 'approved').length})
+            </button>
+            <button 
+              className={`btn ${filter === 'pending' ? '' : 'btn-outline'}`}
+              onClick={() => setFilter('pending')}
+            >
+              Pending ({commits.filter(c => c.status?.toLowerCase() === 'pending').length})
+            </button>
+            <button 
+              className={`btn ${filter === 'rejected' ? '' : 'btn-outline'}`}
+              onClick={() => setFilter('rejected')}
+            >
+              Rejected ({commits.filter(c => c.status?.toLowerCase() === 'rejected').length})
+            </button>
+          </div>
+
+          {/* Commits List */}
+          {filteredCommits.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
+              <h3>No commits found</h3>
+              <p style={{ color: '#6c757d' }}>
+                {filter === 'all' 
+                  ? "You haven't made any commits yet. Start contributing to knowledge posts!"
+                  : `No ${filter} commits found.`
+                }
+              </p>
+            </div>
+          ) : (
+            <div>
+              {filteredCommits.map(commit => (
+                <div key={commit.commitId} className="card" style={{ marginBottom: '1rem' }}>
+                  <div className="flex justify-between items-start">
+                    <div style={{ flex: 1 }}>
+                      <div className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '1.2rem' }}>
+                          {getStatusIcon(commit.status)}
+                        </span>
+                        <span 
+                          style={{ 
+                            fontSize: '0.85rem',
+                            color: getStatusColor(commit.status),
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          {commit.status || 'Draft'}
+                        </span>
+                      </div>
+                      
+                      <h4 style={{ marginBottom: '0.5rem' }}>
+                        <Link to={`/post/${commit.postId}`} style={{ color: '#333' }}>
+                          {commit.postTitle || `Post #${commit.postId}`}
+                        </Link>
+                      </h4>
+                      
+                      <p style={{ color: '#6c757d', marginBottom: '0.5rem' }}>
+                        {commit.message || 'No commit message provided'}
+                      </p>
+                      
+                      <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                        <div>
+                          Reviewed by: {commit.manager?.user?.fullName || commit.managerName || 'Pending manager assignment'}
+                        </div>
+                        <div>
+                          {dayjs(commit.createdAt).format('MMMM D, YYYY at h:mm A')} 
+                          <span style={{ marginLeft: '0.5rem' }}>
+                            ({dayjs(commit.createdAt).fromNow()})
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Link to={`/post/${commit.postId}`} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
+                        View Post
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  {/* Feedback */}
+                  {commit.feedback && (
+                    <div style={{ 
+                      marginTop: '1rem', 
+                      padding: '0.75rem', 
+                      background: '#f8f9fa', 
+                      borderRadius: '4px',
+                      borderLeft: `4px solid ${getStatusColor(commit.status)}`
+                    }}>
+                      <strong style={{ fontSize: '0.85rem' }}>Manager Feedback:</strong>
+                      <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>
+                        {commit.feedback}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Info Section */}
+        <div className="card" style={{ background: '#f8f9fa', marginTop: '2rem' }}>
+          <h3>About Commits</h3>
+          <div style={{ fontSize: '0.9rem' }}>
+            <p style={{ marginBottom: '0.5rem' }}>
+              <strong>What are commits?</strong> Commits track your contributions and updates to knowledge posts.
+            </p>
+            <p style={{ marginBottom: '0.5rem' }}>
+              <strong>Review Process:</strong> Your manager reviews commits to ensure quality and accuracy.
+            </p>
+            <p style={{ marginBottom: '0.5rem' }}>
+              <strong>Status Types:</strong>
+            </p>
+            <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
+              <li><span style={{ color: '#ffc107' }}>⏳ Pending</span> - Waiting for manager review</li>
+              <li><span style={{ color: '#28a745' }}>✅ Approved</span> - Accepted and published</li>
+              <li><span style={{ color: '#dc3545' }}>❌ Rejected</span> - Needs revision</li>
+            </ul>
+          </div>
+        </div>
+      </main>
+    </div>
+  )
+} === 'all' ? '' : 'btn-outline'}`}
+              onClick={() => setFilter('all')}
+            >
+              All ({commits.length})
+            </button>
+            <button 
+              className={`btn ${filter
+
+
+
