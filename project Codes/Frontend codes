@@ -2458,11 +2458,12 @@ export default function Profile() {
 
 src/pages/Commits.jsx
 
+// src/pages/Commits.jsx
 
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api'
-import Navbar from '../components/Navbar'
+import Navbar from '../Components/Navbar'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
@@ -2595,6 +2596,12 @@ export default function Commits() {
             >
               Rejected ({commits.filter(c => c.status?.toLowerCase() === 'rejected').length})
             </button>
+            <button
+              className={`btn ${filter === 'all' ? '' : 'btn-outline'}`}
+              onClick={() => setFilter('all')}
+            >
+              All ({commits.length})
+            </button>
           </div>
 
           {/* Commits List */}
@@ -2680,37 +2687,7 @@ export default function Commits() {
             </div>
           )}
         </div>
-
-        {/* Info Section */}
-        <div className="card" style={{ background: '#f8f9fa', marginTop: '2rem' }}>
-          <h3>About Commits</h3>
-          <div style={{ fontSize: '0.9rem' }}>
-            <p style={{ marginBottom: '0.5rem' }}>
-              <strong>What are commits?</strong> Commits track your contributions and updates to knowledge posts.
-            </p>
-            <p style={{ marginBottom: '0.5rem' }}>
-              <strong>Review Process:</strong> Your manager reviews commits to ensure quality and accuracy.
-            </p>
-            <p style={{ marginBottom: '0.5rem' }}>
-              <strong>Status Types:</strong>
-            </p>
-            <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
-              <li><span style={{ color: '#ffc107' }}>⏳ Pending</span> - Waiting for manager review</li>
-              <li><span style={{ color: '#28a745' }}>✅ Approved</span> - Accepted and published</li>
-              <li><span style={{ color: '#dc3545' }}>❌ Rejected</span> - Needs revision</li>
-            </ul>
-          </div>
-        </div>
       </main>
     </div>
   )
-} === 'all' ? '' : 'btn-outline'}`}
-              onClick={() => setFilter('all')}
-            >
-              All ({commits.length})
-            </button>
-            <button 
-              className={`btn ${filter
-
-
-
+}
