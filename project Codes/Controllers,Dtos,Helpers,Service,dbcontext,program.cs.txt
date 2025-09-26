@@ -2,6 +2,7 @@
 
 // C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Program.cs
 
+
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Project_Version1.Data;
 using Project_Version1.Helpers;
-
+using Microsoft.OpenApi.Models;
 using Project_Version1.Services;
 using System.Text;
 using Project_Version1.Profiles;
@@ -24,11 +25,12 @@ builder.Services.AddAutoMapper(cfg => { cfg.AddMaps(typeof(MappingProfile).Assem
 // Helpers & Services
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<VoteService>(); // Make sure this comes before CommentService
+builder.Services.AddScoped<CommentService>(); // Now depends on VoteService
 builder.Services.AddScoped<PostService>();
-builder.Services.AddScoped<CommentService>();
-builder.Services.AddScoped<VoteService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<FileService>();
+
 
 // SignalR
 builder.Services.AddSignalR();
@@ -38,11 +40,41 @@ builder.Services.AddSignalR();
 // Controllers
 builder.Services.AddControllers().AddJsonOptions(options =>{
 
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true;
     });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "FNF KnowledgeBase API", Version = "v1" });
+
+    // ?? Add JWT Bearer definition
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your token.\n\nExample: \"Bearer abc123xyz\""
+    });
+
+    // ?? Require JWT for all endpoints by default
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // JWT
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -160,116 +192,279 @@ namespace Project_Version1.Controllers
 }
 
 // C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Controllers\CommentsController.cs
-﻿using Microsoft.AspNetCore.Authorization;
+// Controllers/CommentsController.cs - Updated with vote support
+
+using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
+
 using System.Security.Claims;
+
 using System.Threading.Tasks;
+
 using Microsoft.EntityFrameworkCore;
+
 using Project_Version1.Services;
+
 using Project_Version1.DTOs;
+
 using Project_Version1.Data;
 
 namespace Project_Version1.Controllers
+
 {
+
     [ApiController]
+
     [Route("api/[controller]")]
+
     public class CommentsController : ControllerBase
+
     {
+
         private readonly CommentService _commentService;
+
         private readonly FnfKnowledgeBaseContext _db;
 
         public CommentsController(CommentService commentService, FnfKnowledgeBaseContext db)
+
         {
+
             _commentService = commentService;
+
             _db = db;
+
         }
 
         [HttpGet("post/{postId}")]
+
         public async Task<IActionResult> GetForPost(int postId, [FromQuery] bool hierarchical = false)
+
         {
+
             try
+
             {
+
+                // Get current user ID if authenticated
+
+                int? currentUserId = null;
+
+                if (User.Identity?.IsAuthenticated == true)
+
+                {
+
+                    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (userIdClaim != null && int.TryParse(userIdClaim, out var userId))
+
+                    {
+
+                        currentUserId = userId;
+
+                    }
+
+                }
+
                 if (hierarchical)
+
                 {
-                    var hierarchicalComments = await _commentService.GetCommentsHierarchyAsync(postId);
+
+                    var hierarchicalComments = await _commentService.GetCommentsHierarchyAsync(postId, currentUserId);
+
                     return Ok(hierarchicalComments);
+
                 }
+
                 else
+
                 {
-                    var comments = await _commentService.GetCommentsForPostAsync(postId);
+
+                    var comments = await _commentService.GetCommentsForPostAsync(postId, currentUserId);
+
                     return Ok(comments);
+
                 }
+
             }
+
             catch (Exception ex)
+
             {
+
                 return BadRequest(new { message = ex.Message });
+
             }
+
+        }
+
+        [HttpGet("{commentId}")]
+
+        public async Task<IActionResult> GetComment(int commentId)
+
+        {
+
+            try
+
+            {
+
+                // Get current user ID if authenticated
+
+                int? currentUserId = null;
+
+                if (User.Identity?.IsAuthenticated == true)
+
+                {
+
+                    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                    if (userIdClaim != null && int.TryParse(userIdClaim, out var userId))
+
+                    {
+
+                        currentUserId = userId;
+
+                    }
+
+                }
+
+                var comment = await _commentService.GetCommentWithVotesAsync(commentId, currentUserId);
+
+                if (comment == null) return NotFound();
+
+
+
+                return Ok(comment);
+
+            }
+
+            catch (Exception ex)
+
+            {
+
+                return BadRequest(new { message = ex.Message });
+
+            }
+
         }
 
         [Authorize]
+
         [HttpPost]
+
         public async Task<IActionResult> Create([FromBody] CommentCreateDto dto)
+
         {
+
             try
+
             {
+
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
                 var comment = await _commentService.AddCommentAsync(dto, userId);
 
                 if (comment == null)
+
                 {
+
                     return BadRequest(new { message = "Failed to create comment" });
+
                 }
 
-                return CreatedAtAction(nameof(GetForPost), new { postId = dto.PostId }, comment);
+                // Return comment with vote information
+
+                var commentWithVotes = await _commentService.GetCommentWithVotesAsync(comment.CommentId, userId);
+
+                return CreatedAtAction(nameof(GetComment), new { commentId = comment.CommentId }, commentWithVotes);
+
             }
+
             catch (ArgumentException ex)
+
             {
+
                 return BadRequest(new { message = ex.Message });
+
             }
-            catch (Exception )
+
+            catch (Exception)
+
             {
+
                 return StatusCode(500, new { message = "An error occurred while creating the comment" });
+
             }
+
         }
 
-        
         [Authorize]
+
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id, [FromQuery] bool force = false)
+
+        public async Task<IActionResult> Delete(int id, [FromQuery] string? commitMessage = null)
+
         {
+
             try
+
             {
+
                 var comment = await _commentService.GetCommentAsync(id);
+
                 if (comment == null) return NotFound();
+
+
+
                 var role = User.FindFirstValue(ClaimTypes.Role);
+
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+
+
                 if (role == "Manager")
+
                 {
+
                     var manager = await _db.Managers.FirstOrDefaultAsync(m => m.UserId == userId && m.DeptId == comment.Post.DeptId);
+
                     if (manager == null) return Forbid();
-                    _db.Commits.Add(new Commit { PostId = comment.PostId, ManagerId = manager.ManagerId, Message = $"Deleted comment {id}" });
-                    if (force)
+
+
+
+                    if (!string.IsNullOrEmpty(commitMessage))
+
                     {
-                        await _commentService.ForceDeleteCommentAsync(comment);
+
+                        _db.Commits.Add(new Commit { PostId = comment.PostId, ManagerId = manager.ManagerId, Message = commitMessage });
+
                     }
-                    else
-                    {
-                        await _commentService.DeleteCommentAsync(comment);
-                    }
+
+
+
+                    await _commentService.ForceDeleteCommentAsync(comment);
+
                     return NoContent();
 
                 }
 
                 return Forbid();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-    }
-}
 
+            }
+
+            catch (Exception ex)
+
+            {
+
+                return BadRequest(new { message = ex.Message });
+
+            }
+
+        }
+
+    }
+
+}
 // C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Controllers\NotificationsController.cs
 ﻿
 using Microsoft.AspNetCore.Authorization;
@@ -1272,6 +1467,7 @@ namespace Project_Version1.DTOs
 
 // C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\DTOs\CommentDtos.cs
 ﻿
+// DTOs/CommentDtos.cs - Updated with vote information
 using System;
 
 namespace Project_Version1.DTOs
@@ -1291,8 +1487,14 @@ namespace Project_Version1.DTOs
         public string CommentText { get; set; } = null!;
         public string? AuthorName { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        // Vote information
+        public int UpvoteCount { get; set; }
+        public int DownvoteCount { get; set; }
+        public string? UserVote { get; set; } // "upvote", "downvote", or null
     }
-     public class CommentWithRepliesDto
+
+    public class CommentWithRepliesDto
     {
         public int CommentId { get; set; }
         public int PostId { get; set; }
@@ -1301,6 +1503,11 @@ namespace Project_Version1.DTOs
         public string? AuthorName { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<CommentWithRepliesDto> Replies { get; set; } = new List<CommentWithRepliesDto>();
+
+        // Vote information
+        public int UpvoteCount { get; set; }
+        public int DownvoteCount { get; set; }
+        public string? UserVote { get; set; } // "upvote", "downvote", or null
     }
 
     // Enhanced comment DTO with additional info
@@ -1546,7 +1753,8 @@ namespace Project_Version1.Helpers
 }
 
 // C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Profiles\MappingProfile.cs
-﻿using AutoMapper;
+// Profiles/MappingProfile.cs - Updated comment mappings
+using AutoMapper;
 using Project_Version1.Data;
 using Project_Version1.DTOs;
 using System.Linq;
@@ -1557,39 +1765,39 @@ namespace Project_Version1.Profiles
     {
         public MappingProfile()
         {
-            // User mappings
+            // User mappings (unchanged)
             CreateMap<User, UserDto>()
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role ?? "Employee"))
                 .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.ProfilePicture));
 
             CreateMap<UserCreateDto, User>()
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // Handle separately
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
             CreateMap<UserUpdateDto, User>()
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // Handle separately
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.ProfilePicture, opt => opt.Ignore())
                 .ForMember(dest => dest.Email, opt => opt.Ignore())
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null)); // Ignore nulls
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<RegisterDto, User>()
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
-            // Post mappings
+            // Post mappings (unchanged)
             CreateMap<PostCreateDto, Post>()
                 .ForMember(dest => dest.PostId, opt => opt.Ignore())
-                .ForMember(dest => dest.UserId, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpvoteCount, opt => opt.MapFrom(src => 0))
                 .ForMember(dest => dest.DownvoteCount, opt => opt.MapFrom(src => 0))
-            .ForMember(dest => dest.IsRepost, opt => opt.MapFrom(src => false))
-            .ForMember(dest => dest.Attachments, opt => opt.Ignore()) // Handle attachments separately
-                .ForMember(dest => dest.PostTags, opt => opt.Ignore()); // Handle tags separately
+                .ForMember(dest => dest.IsRepost, opt => opt.MapFrom(src => false))
+                .ForMember(dest => dest.Attachments, opt => opt.Ignore())
+                .ForMember(dest => dest.PostTags, opt => opt.Ignore());
 
             CreateMap<Post, PostBriefDto>()
                 .ForMember(dest => dest.BodyPreview, opt => opt.MapFrom(src =>
@@ -1599,9 +1807,12 @@ namespace Project_Version1.Profiles
                 .ForMember(dest => dest.DownvoteCount, opt => opt.MapFrom(src => src.DownvoteCount ?? 0))
                 .ForMember(dest => dest.CommentsCount, opt => opt.MapFrom(src =>
                     src.Comments != null ? src.Comments.Count : 0))
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName));
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.IsRepost, opt => opt.MapFrom(src => src.IsRepost))
+                .ForMember(dest => dest.RepostedBy, opt => opt.MapFrom(src =>
+                    src.Reposts.OrderByDescending(r => r.CreatedAt).FirstOrDefault().User.FullName));
 
-            // Comment mappings
+            // Comment mappings - Updated to ignore vote fields (handled in service)
             CreateMap<CommentCreateDto, Comment>()
                 .ForMember(dest => dest.CommentId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
@@ -1609,24 +1820,34 @@ namespace Project_Version1.Profiles
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
 
             CreateMap<Comment, CommentDto>()
-                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName));
+                .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.UpvoteCount, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.DownvoteCount, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.UserVote, opt => opt.Ignore()); // Set in service
 
-            // Use the "with replies" DTO but ignore Replies mapping (the service builds hierarchy manually)
             CreateMap<Comment, CommentWithRepliesDto>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName))
-                .ForMember(dest => dest.Replies, opt => opt.Ignore());
+                .ForMember(dest => dest.Replies, opt => opt.Ignore()) // Built manually in service
+                .ForMember(dest => dest.UpvoteCount, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.DownvoteCount, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.UserVote, opt => opt.Ignore()); // Set in service
 
             CreateMap<Comment, CommentDetailDto>()
                 .ForMember(dest => dest.AuthorName, opt => opt.MapFrom(src => src.User.FullName))
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.CommentText == "[Comment deleted]"))
-                .ForMember(dest => dest.ReplyCount, opt => opt.MapFrom(src => src.InverseParentComment != null ? src.InverseParentComment.Count : 0));
+                .ForMember(dest => dest.ReplyCount, opt => opt.MapFrom(src =>
+                    src.InverseParentComment != null ? src.InverseParentComment.Count : 0))
+                .ForMember(dest => dest.UpvoteCount, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.DownvoteCount, opt => opt.Ignore()) // Set in service
+                .ForMember(dest => dest.UserVote, opt => opt.Ignore()); // Set in service
 
+            // Vote mappings (unchanged)
             CreateMap<VoteDto, Vote>()
                 .ForMember(dest => dest.VoteId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
-            // Tag mappings
+            // Tag and Department mappings (unchanged)
             CreateMap<Tag, TagDto>()
                 .ForMember(dest => dest.TagId, opt => opt.MapFrom(src => src.TagId))
                 .ForMember(dest => dest.TagName, opt => opt.MapFrom(src => src.TagName))
@@ -1639,7 +1860,7 @@ namespace Project_Version1.Profiles
     }
 }
 
-// C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Services\AuthService.cs
+///s/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Services\AuthService.cs
 ﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
@@ -1764,7 +1985,8 @@ namespace Project_Version1.Services
 }
 
 // C:/Users/akars/OneDrive/Desktop/SwarPYCodes/Project_FNF-main/Project__Version1\Services\CommentService.cs
-﻿using System;
+﻿// Services/CommentService.cs - Updated with vote functionality
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -1780,11 +2002,13 @@ namespace Project_Version1.Services
     {
         private readonly FnfKnowledgeBaseContext _db;
         private readonly IMapper _mapper;
+        private readonly VoteService _voteService;
 
-        public CommentService(FnfKnowledgeBaseContext db, IMapper mapper)
+        public CommentService(FnfKnowledgeBaseContext db, IMapper mapper, VoteService voteService)
         {
             _db = db;
             _mapper = mapper;
+            _voteService = voteService;
         }
 
         public async Task<Comment?> AddCommentAsync(CommentCreateDto dto, int userId)
@@ -1814,9 +2038,8 @@ namespace Project_Version1.Services
             }
             else
             {
-                dto.ParentCommentId = null; // ✅ treat 0 as null
+                dto.ParentCommentId = null; // treat 0 as null
             }
-
 
             var comment = _mapper.Map<Comment>(dto);
             comment.UserId = userId;
@@ -1831,18 +2054,39 @@ namespace Project_Version1.Services
                 .FirstOrDefaultAsync(c => c.CommentId == comment.CommentId);
         }
 
-        public async Task<List<CommentDto>> GetCommentsForPostAsync(int postId)
+        public async Task<List<CommentDto>> GetCommentsForPostAsync(int postId, int? currentUserId = null)
         {
-            return await _db.Comments
+            var comments = await _db.Comments
                 .Where(c => c.PostId == postId)
                 .Include(c => c.User)
-                .OrderBy(c => c.CreatedAt) // Root comments first, then replies
-                .ProjectTo<CommentDto>(_mapper.ConfigurationProvider)
+                .OrderBy(c => c.CreatedAt)
                 .ToListAsync();
+
+            var commentDtos = new List<CommentDto>();
+
+            foreach (var comment in comments)
+            {
+                var dto = _mapper.Map<CommentDto>(comment);
+
+                // Get vote counts
+                var (upvotes, downvotes) = await _voteService.GetCommentVoteCountsAsync(comment.CommentId);
+                dto.UpvoteCount = upvotes;
+                dto.DownvoteCount = downvotes;
+
+                // Get user's vote if user is logged in
+                if (currentUserId.HasValue)
+                {
+                    dto.UserVote = await _voteService.GetUserVoteOnCommentAsync(comment.CommentId, currentUserId.Value);
+                }
+
+                commentDtos.Add(dto);
+            }
+
+            return commentDtos;
         }
 
-        // Get hierarchical comments (nested structure)
-        public async Task<List<CommentWithRepliesDto>> GetCommentsHierarchyAsync(int postId)
+        // Get hierarchical comments (nested structure) with vote information
+        public async Task<List<CommentWithRepliesDto>> GetCommentsHierarchyAsync(int postId, int? currentUserId = null)
         {
             var allComments = await _db.Comments
                 .Where(c => c.PostId == postId)
@@ -1850,10 +2094,28 @@ namespace Project_Version1.Services
                 .OrderBy(c => c.CreatedAt)
                 .ToListAsync();
 
-            // Build hierarchy
-            var commentDtos = _mapper.Map<List<CommentWithRepliesDto>>(allComments);
-            var commentDict = commentDtos.ToDictionary(c => c.CommentId);
+            // Build hierarchy with vote information
+            var commentDtos = new List<CommentWithRepliesDto>();
 
+            foreach (var comment in allComments)
+            {
+                var dto = _mapper.Map<CommentWithRepliesDto>(comment);
+
+                // Get vote counts
+                var (upvotes, downvotes) = await _voteService.GetCommentVoteCountsAsync(comment.CommentId);
+                dto.UpvoteCount = upvotes;
+                dto.DownvoteCount = downvotes;
+
+                // Get user's vote if user is logged in
+                if (currentUserId.HasValue)
+                {
+                    dto.UserVote = await _voteService.GetUserVoteOnCommentAsync(comment.CommentId, currentUserId.Value);
+                }
+
+                commentDtos.Add(dto);
+            }
+
+            var commentDict = commentDtos.ToDictionary(c => c.CommentId);
             var rootComments = new List<CommentWithRepliesDto>();
 
             foreach (var comment in commentDtos)
@@ -1881,28 +2143,6 @@ namespace Project_Version1.Services
                 .FirstOrDefaultAsync(c => c.CommentId == commentId);
         }
 
-        public async Task DeleteCommentAsync(Comment comment)
-        {
-            // Check if comment has replies
-            var hasReplies = await _db.Comments.AnyAsync(c => c.ParentCommentId == comment.CommentId);
-
-            if (hasReplies)
-            {
-                // Option 1: Mark as deleted instead of actually deleting
-                comment.CommentText = "[Comment deleted]";
-                comment.UpdatedAt = DateTime.UtcNow;
-                _db.Comments.Update(comment);
-            }
-            else
-            {
-                // Option 2: Actually delete if no replies
-                _db.Comments.Remove(comment);
-            }
-
-            await _db.SaveChangesAsync();
-        }
-
-        // Alternative: Force delete with cascading
         public async Task ForceDeleteCommentAsync(Comment comment)
         {
             // First delete all replies recursively
@@ -1926,6 +2166,31 @@ namespace Project_Version1.Services
             {
                 _db.Comments.Remove(comment);
             }
+        }
+
+        // Get comment with vote information
+        public async Task<CommentDto?> GetCommentWithVotesAsync(int commentId, int? currentUserId = null)
+        {
+            var comment = await _db.Comments
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.CommentId == commentId);
+
+            if (comment == null) return null;
+
+            var dto = _mapper.Map<CommentDto>(comment);
+
+            // Get vote counts
+            var (upvotes, downvotes) = await _voteService.GetCommentVoteCountsAsync(commentId);
+            dto.UpvoteCount = upvotes;
+            dto.DownvoteCount = downvotes;
+
+            // Get user's vote if user is logged in
+            if (currentUserId.HasValue)
+            {
+                dto.UserVote = await _voteService.GetUserVoteOnCommentAsync(commentId, currentUserId.Value);
+            }
+
+            return dto;
         }
     }
 }
@@ -2363,3 +2628,4 @@ namespace Project_Version1.Services
         }
     }
 }
+
