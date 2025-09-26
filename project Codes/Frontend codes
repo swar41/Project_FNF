@@ -1118,17 +1118,14 @@ export default function Feed() {
 }
 
 src/pages/PostDetails.jsx
-
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api'
 import Navbar from '../Components/Navbar'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { isAuthenticated, getAuth } from '../utils/auth'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 
 dayjs.extend(relativeTime)
 
@@ -1151,19 +1148,14 @@ export default function PostDetails() {
       setPost(response.data)
     } catch (error) {
       console.error('Failed to fetch post:', error)
-      if (error.response?.status === 404) {
-        navigate('/feed')
-      }
+      if (error.response?.status === 404) navigate('/feed')
     } finally {
       setLoading(false)
     }
   }
 
   async function handleVote(type) {
-    if (!isAuthenticated()) {
-      navigate('/login')
-      return
-    }
+    if (!isAuthenticated()) return navigate('/login')
     try {
       setVoting(true)
       await api.post(`/votes`, {
@@ -1173,24 +1165,49 @@ export default function PostDetails() {
       })
       await fetchPost()
     } catch (error) {
-      console.error('Failed to vote:', error)
+      console.error('Vote failed:', error)
     } finally {
       setVoting(false)
     }
   }
 
   async function handleRepost() {
-    if (!isAuthenticated()) {
-      navigate('/login')
-      return
-    }
+    if (!isAuthenticated()) return navigate('/login')
     try {
       await api.post(`/posts/${id}/repost`)
-      alert('Post reposted successfully!')
+      alert('Post reposted!')
     } catch (error) {
-      console.error('Failed to repost:', error)
-      alert('Failed to repost')
+      console.error('Repost failed:', error)
+      alert('Repost failed')
     }
+  }
+
+  function renderBlocks(bodyJson) {
+    let blocks
+    try {
+      blocks = JSON.parse(bodyJson)
+    } catch {
+      return <p>{bodyJson}</p>
+    }
+    return blocks.map((block, idx) => {
+      if (block.type === 'code') {
+        return (
+          <div key={idx} style={{ position: 'relative', marginBottom: '1rem' }}>
+            <button
+              className="btn btn-outline"
+              style={{ position: 'absolute', right: '10px', top: '10px' }}
+              onClick={() => navigator.clipboard.writeText(block.content)}
+            >
+              Copy Code
+            </button>
+            <SyntaxHighlighter language="python" showLineNumbers>
+              {block.content}
+            </SyntaxHighlighter>
+          </div>
+        )
+      }
+      return <p key={idx}>{block.content}</p>
+    })
   }
 
   if (loading) {
@@ -1223,24 +1240,13 @@ export default function PostDetails() {
   return (
     <div>
       <Navbar />
-
       <main className="container" style={{ marginTop: '2rem' }}>
-        <button
-          className="btn btn-outline"
-          onClick={() => navigate(-1)}
-          style={{ marginBottom: '1rem' }}
-        >
+        <button className="btn btn-outline" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
           ← Back
         </button>
 
         <article className="card">
-          <header
-            style={{
-              marginBottom: '1.5rem',
-              borderBottom: '1px solid #e9ecef',
-              paddingBottom: '1rem'
-            }}
-          >
+          <header style={{ marginBottom: '1.5rem', borderBottom: '1px solid #e9ecef', paddingBottom: '1rem' }}>
             <h1 style={{ marginBottom: '0.5rem' }}>{post.title}</h1>
 
             <div className="flex justify-between items-center">
@@ -1248,31 +1254,24 @@ export default function PostDetails() {
                 <strong>{post.authorName}</strong>
                 {post.department && <span> • {post.department}</span>}
                 <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
-                  {dayjs(post.createdAt).format('MMMM D, YYYY at h:mm A')}
-                  <span style={{ marginLeft: '0.5rem' }}>
-                    ({dayjs(post.createdAt).fromNow()})
-                  </span>
+                  {dayjs(post.createdAt).format('MMMM D, YYYY h:mm A')}
+                  <span style={{ marginLeft: '0.5rem' }}>({dayjs(post.createdAt).fromNow()})</span>
                 </div>
               </div>
 
               {isAuthenticated() && (
                 <div className="flex gap-2">
-                  <button
-                    className="btn btn-outline"
-                    onClick={handleRepost}
-                    style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
-                  >
+                  <button className="btn btn-outline" onClick={handleRepost}>
                     🔄 Repost
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Tags */}
             {post.tags && post.tags.length > 0 && (
               <div style={{ marginTop: '1rem' }}>
-                {post.tags.map((tag, index) => (
-                  <span key={index} className="tag">
+                {post.tags.map((tag, i) => (
+                  <span key={i} className="tag">
                     {tag}
                   </span>
                 ))}
@@ -1280,56 +1279,24 @@ export default function PostDetails() {
             )}
           </header>
 
-          {/* Post Content */}
-          <div className="markdown-content">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight]}
-            >
-              {post.body}
-            </ReactMarkdown>
-          </div>
+          {/* Body */}
+          <div className="markdown-content">{renderBlocks(post.body)}</div>
 
           {/* Attachments */}
           {post.attachments && post.attachments.length > 0 && (
-            <div
-              style={{
-                marginTop: '2rem',
-                padding: '1rem',
-                background: '#f8f9fa',
-                borderRadius: '6px'
-              }}
-            >
-              <h3 style={{ marginBottom: '1rem' }}>Attachments</h3>
+            <div style={{ marginTop: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '6px' }}>
+              <h3>Attachments</h3>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                {post.attachments.map(attachment => {
-                  const fileUrl = `http://localhost:5157/${attachment.filePath}`
-                  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
-                    attachment.fileName
-                  )
+                {post.attachments.map(file => {
+                  const url = `http://localhost:5157/${file.filePath}`
+                  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(file.fileName)
                   return (
-                    <li
-                      key={attachment.attachmentId}
-                      style={{ marginBottom: '1rem' }}
-                    >
+                    <li key={file.attachmentId} style={{ marginBottom: '1rem' }}>
                       {isImage ? (
-                        <img
-                          src={fileUrl}
-                          alt={attachment.fileName}
-                          style={{
-                            maxWidth: '100%',
-                            height: 'auto',
-                            borderRadius: '6px'
-                          }}
-                        />
+                        <img src={url} alt={file.fileName} style={{ maxWidth: '100%', borderRadius: '6px' }} />
                       ) : (
-                        <a
-                          href={fileUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-2"
-                        >
-                          📎 {attachment.fileName}
+                        <a href={url} target="_blank" rel="noreferrer">
+                          📎 {file.fileName}
                         </a>
                       )}
                     </li>
@@ -1339,58 +1306,30 @@ export default function PostDetails() {
             </div>
           )}
 
-          {/* Voting and Stats */}
-          <footer
-            style={{
-              marginTop: '2rem',
-              padding: '1rem',
-              background: '#f8f9fa',
-              borderRadius: '6px'
-            }}
-          >
+          {/* Voting */}
+          <footer style={{ marginTop: '2rem', padding: '1rem', background: '#f8f9fa', borderRadius: '6px' }}>
             <div className="flex justify-between items-center">
               <div className="flex gap-4">
                 <button
                   className={`btn ${voting ? 'btn-secondary' : 'btn-outline'}`}
-                  onClick={() => handleVote('upvote')}
+                  onClick={() => handleVote('Upvote')}
                   disabled={voting || !isAuthenticated()}
-                  title={!isAuthenticated() ? 'Login to vote' : 'Upvote'}
                 >
                   ▲ {post.upvoteCount || 0}
                 </button>
                 <button
                   className={`btn ${voting ? 'btn-secondary' : 'btn-outline'}`}
-                  onClick={() => handleVote('downvote')}
+                  onClick={() => handleVote('Downvote')}
                   disabled={voting || !isAuthenticated()}
-                  title={!isAuthenticated() ? 'Login to vote' : 'Downvote'}
                 >
                   ▼ {post.downvoteCount || 0}
                 </button>
               </div>
-
-              <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>
-                💬 {post.commentsCount || 0} comments
-              </div>
+              <div style={{ fontSize: '0.85rem', color: '#6c757d' }}>💬 {post.commentsCount || 0} comments</div>
             </div>
-
-            {!isAuthenticated() && (
-              <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                <p
-                  style={{
-                    fontSize: '0.9rem',
-                    color: '#6c757d',
-                    marginBottom: '0.5rem'
-                  }}
-                >
-                  Want to vote or comment?
-                </p>
-                <button className="btn" onClick={() => navigate('/login')}>
-                  Login to Participate
-                </button>
-              </div>
-            )}
           </footer>
         </article>
+
 
         {/* Comments Section */}
         <Comments postId={post.postId} />
@@ -1511,11 +1450,17 @@ function Comments({ postId }) {
   )
 }
 
+
 function CommentItem({ comment, postId }) {
   const [voting, setVoting] = useState(false)
   const [showReplies, setShowReplies] = useState(false)
   const [replying, setReplying] = useState(false)
   const [replyText, setReplyText] = useState('')
+  const [voteState, setVoteState] = useState({
+    upvoteCount: comment.upvoteCount || 0,
+    downvoteCount: comment.downvoteCount || 0,
+    userVote: comment.userVote || null
+  })
   const navigate = useNavigate()
 
   async function handleVote(type) {
@@ -1523,17 +1468,47 @@ function CommentItem({ comment, postId }) {
       navigate('/login')
       return
     }
+    
     try {
       setVoting(true)
-      await api.post(`/votes`, {
+      
+      // Use the general vote endpoint
+      await api.post('/votes', {
         postId: null,
         commentId: comment.commentId,
         voteType: type
       })
-      if (type === 'upvote') comment.upvoteCount++
-      else if (type === 'downvote') comment.downvoteCount++
+      
+      // Update local state optimistically
+      const newUserVote = voteState.userVote === type ? null : type
+      let newUpvoteCount = voteState.upvoteCount
+      let newDownvoteCount = voteState.downvoteCount
+      
+      // Calculate new counts based on vote changes
+      if (voteState.userVote === 'upvote' && type === 'downvote') {
+        newUpvoteCount--
+        newDownvoteCount++
+      } else if (voteState.userVote === 'downvote' && type === 'upvote') {
+        newDownvoteCount--
+        newUpvoteCount++
+      } else if (voteState.userVote === null) {
+        if (type === 'upvote') newUpvoteCount++
+        else newDownvoteCount++
+      } else if (voteState.userVote === type) {
+        // Removing vote
+        if (type === 'upvote') newUpvoteCount--
+        else newDownvoteCount--
+      }
+      
+      setVoteState({
+        upvoteCount: newUpvoteCount,
+        downvoteCount: newDownvoteCount,
+        userVote: newUserVote
+      })
+      
     } catch (error) {
       console.error('Failed to vote comment:', error)
+      alert('Failed to vote on comment')
     } finally {
       setVoting(false)
     }
@@ -1554,7 +1529,7 @@ function CommentItem({ comment, postId }) {
       })
       setReplyText('')
       setReplying(false)
-      window.location.reload() // reload comments (simple way)
+      window.location.reload() // Simple reload to show new reply
     } catch (error) {
       console.error('Failed to post reply:', error)
     }
@@ -1571,29 +1546,46 @@ function CommentItem({ comment, postId }) {
         </div>
         <div className="flex gap-2">
           <button
-            className="btn btn-outline"
+            className={`btn ${voteState.userVote === 'upvote' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => handleVote('upvote')}
             disabled={voting}
+            style={{ 
+              fontSize: '0.8rem', 
+              padding: '0.25rem 0.5rem',
+              backgroundColor: voteState.userVote === 'upvote' ? '#28a745' : '',
+              color: voteState.userVote === 'upvote' ? 'white' : ''
+            }}
           >
-            ▲ {comment.upvoteCount || 0}
+            ▲ {voteState.upvoteCount}
           </button>
           <button
-            className="btn btn-outline"
+            className={`btn ${voteState.userVote === 'downvote' ? 'btn-danger' : 'btn-outline'}`}
             onClick={() => handleVote('downvote')}
             disabled={voting}
+            style={{ 
+              fontSize: '0.8rem', 
+              padding: '0.25rem 0.5rem',
+              backgroundColor: voteState.userVote === 'downvote' ? '#dc3545' : '',
+              color: voteState.userVote === 'downvote' ? 'white' : ''
+            }}
           >
-            ▼ {comment.downvoteCount || 0}
+            ▼ {voteState.downvoteCount}
           </button>
-          <button
-            className="btn btn-link"
-            onClick={() => setReplying(!replying)}
-          >
-            💬 Reply
-          </button>
+          {isAuthenticated() && (
+            <button
+              className="btn btn-outline"
+              onClick={() => setReplying(!replying)}
+              style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+            >
+              💬 Reply
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="comment-body">{comment.commentText}</div>
+      <div className="comment-body" style={{ margin: '0.5rem 0' }}>
+        {comment.commentText}
+      </div>
 
       {/* Reply Form */}
       {replying && (
@@ -1605,20 +1597,23 @@ function CommentItem({ comment, postId }) {
             rows={2}
             style={{ marginBottom: '0.5rem', width: '100%' }}
           />
-          <button
-            className="btn btn-sm"
-            onClick={handleReplySubmit}
-            disabled={!replyText.trim()}
-          >
-            Post Reply
-          </button>
-          <button
-            className="btn btn-link"
-            onClick={() => setReplying(false)}
-            style={{ marginLeft: '0.5rem' }}
-          >
-            Cancel
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="btn"
+              onClick={handleReplySubmit}
+              disabled={!replyText.trim()}
+              style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }}
+            >
+              Post Reply
+            </button>
+            <button
+              className="btn btn-outline"
+              onClick={() => setReplying(false)}
+              style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem' }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -1627,27 +1622,40 @@ function CommentItem({ comment, postId }) {
         <div style={{ marginTop: '0.5rem', marginLeft: '0.5rem' }}>
           {!showReplies ? (
             <button
-              className="btn btn-link"
+              className="btn btn-outline"
               style={{
-                fontSize: '0.85rem',
-                padding: 0,
-                color: '#007bff',
+                fontSize: '0.8rem',
+                padding: '0.25rem 0.5rem',
                 background: 'none',
-                border: 'none'
+                border: '1px solid #007bff',
+                color: '#007bff'
               }}
               onClick={() => setShowReplies(true)}
             >
               View replies ({comment.replies.length})
             </button>
           ) : (
-            <div className="comment-replies" style={{ marginLeft: '1rem' }}>
-              {comment.replies.map(reply => (
-                <CommentItem
-                  key={reply.commentId}
-                  comment={reply}
-                  postId={postId}
-                />
-              ))}
+            <div>
+              <button
+                className="btn btn-outline"
+                style={{
+                  fontSize: '0.8rem',
+                  padding: '0.25rem 0.5rem',
+                  marginBottom: '0.5rem'
+                }}
+                onClick={() => setShowReplies(false)}
+              >
+                Hide replies
+              </button>
+              <div className="comment-replies" style={{ marginLeft: '1rem' }}>
+                {comment.replies.map(reply => (
+                  <CommentItem
+                    key={reply.commentId}
+                    comment={reply}
+                    postId={postId}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -1655,6 +1663,7 @@ function CommentItem({ comment, postId }) {
     </div>
   )
 }
+
 
 src/pages/NewPost.jsx
 
