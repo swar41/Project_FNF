@@ -1,0 +1,16 @@
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 250px;
+  height: 100vh;
+  background-color: #072545;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  transition: left 0.3s ease-in-out;
+  padding: 1rem;
+}
+
+.mobile-sidebar.open {
+  left: 0;
+}
