@@ -1,0 +1,62 @@
+﻿
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Project_Version1.Data;
+using System.Security.Claims;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class CommitsController : ControllerBase
+{
+    private readonly FnfKnowledgeBaseContext _db;
+    public CommitsController(FnfKnowledgeBaseContext db) => _db = db;
+
+    [HttpGet("post/{postId}")]
+    public async Task<IActionResult> GetForPost(int postId)
+    {
+        var commits = await _db.Commits
+            .Where(c => c.PostId == postId)
+            .Include(c => c.Manager).ThenInclude(m => m.User)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+        return Ok(commits);
+    }
+
+    [Authorize]
+    [HttpGet("mine")]
+    public async Task<IActionResult> GetForManager()
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var commits = await _db.Commits
+            .Where(c => c.Manager.UserId == userId)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+        return Ok(commits);
+    }
+
+    [Authorize]
+    [HttpGet("my-notifications")]
+    public async Task<IActionResult> GetMyNotifications()
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        // Get commits where this user’s post was updated or deleted
+        var commits = await _db.Commits
+            .Include(c => c.Manager).ThenInclude(m => m.User)
+            .Include(c => c.Post)
+            .Where(c => c.Post.UserId == userId)
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new
+            {
+                PostTitle = c.Post.Title,
+                c.Message,
+                ManagerName = c.Manager.User.FullName,
+                c.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(commits);
+    }
+}
