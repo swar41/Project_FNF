@@ -1,0 +1,298 @@
+
+/* ============ GuestPage Styles ============ */
+
+/* Layout */
+
+.guest-page {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  padding: 40px 20px;
+
+  background: #d7e5f0;
+
+  min-height: 100vh;
+
+  font-family: 'Segoe UI', Arial, sans-serif;
+
+}
+
+/* Header */
+
+.header-container {
+
+  width: 100%;
+
+  background-color: #335b82;
+
+  height: 80px;
+
+}
+
+.top-nav {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 0 20px;
+
+  height: 120px;
+
+  background-color: #002853;
+
+  color: white;
+
+}
+
+.logo-container {
+
+  display: flex;
+
+  align-items: center;
+
+  height: 100%;
+
+}
+
+.logo-container img {
+
+  height: 77px;
+
+  object-fit: contain;
+
+}
+
+/* Signup/Login buttons */
+
+.nav-btn {
+
+  background-color: #072545;
+
+  color: white;
+
+  border: 2px solid white;
+
+  border-radius: 6px;
+
+  padding: 8px 16px;
+
+  font-size: 1rem;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: background 0.2s, color 0.2s;
+
+  margin-left: 10px;
+  margin-top: 36px;
+
+}
+
+.nav-btn:hover {
+
+  background-color: #072545;
+
+  color: #335b82;
+
+}
+
+/* Welcome Section */
+
+.guest-header {
+
+  text-align: center;
+
+  margin: 40px 0;
+
+  color: #1e588f;
+  margin-top: 60px;
+
+}
+
+.guest-logo {
+
+  height: 80px;
+
+  margin-bottom: 20px;
+
+}
+
+.guest-logo img {
+
+  height: 80px;
+
+}
+
+/* QnAHub Section */
+
+.qna-container {
+
+  max-width: 100%;
+
+  background: #f8faff;
+
+  margin: 30px auto;
+
+  border-radius: 12px;
+
+  padding: 32px 24px;
+
+  box-shadow: 0 2px 24px rgba(32, 136, 254, 0.1);
+
+  color: #335b82;
+
+  margin-bottom: 20px;
+
+}
+
+.qna-header {
+
+  font-size: 2rem;
+
+  font-weight: 700;
+
+  margin-bottom: 12px;
+
+}
+
+.qna-helptext {
+
+  font-size: 1rem;
+
+  color: #6699cc;
+
+  margin-bottom: 28px;
+
+}
+
+.qna-post {
+
+  background: #fff;
+
+  border-left: 4px solid #335b82;
+
+  border-radius: 8px;
+
+  margin-bottom:50px;
+
+  padding: 18px 16px;
+
+  box-shadow: 0 1px 8px rgba(33, 122, 255, 0.06);
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+}
+
+.qna-post:hover {
+
+  transform: translateY(-4px);
+
+  box-shadow: 0 4px 16px rgba(32, 136, 254, 0.15);
+
+}
+
+.qna-title {
+
+  font-size: 1.13rem;
+
+  font-weight: 600;
+
+  margin-bottom: 6px;
+
+}
+
+.qna-content {
+
+  font-size: 1rem;
+
+  margin-bottom: 10px;
+
+}
+
+.qna-meta {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+
+}
+
+.qna-tag,
+
+.qna-dept {
+
+  background: #e3f0ff;
+
+  color: #335b82;
+
+  font-size: 0.85rem;
+
+  padding: 2px 8px;
+
+  border-radius: 4px;
+
+}
+
+.qna-dept {
+
+  background: #f0f7ff;
+
+}
+
+.qna-footer {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+}
+
+.qna-updates {
+
+  font-size: 0.8rem;
+
+  color: #668ad1;
+
+}
+
+.qna-btn {
+
+  background: #335b82;
+
+  color: #fff;
+
+  border: none;
+
+  border-radius: 6px;
+
+  padding: 6px 22px;
+
+  font-size: 1rem;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  box-shadow: 0 2px 8px rgba(32, 122, 255, 0.08);
+
+  transition: background 0.18s;
+
+}
+
+.qna-btn:hover {
+
+  background: #2a4e6e;
+
+}
